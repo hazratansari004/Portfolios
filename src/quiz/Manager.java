@@ -25,7 +25,7 @@ public class Manager extends JFrame {
     private JPanel mainPanel;
 
     // Registration panel components
-    private JTextField txtFirstName, txtMiddleName, txtLastName, txtAge, txtCountry;
+    private JTextField txtFirstName, txtMiddleName, txtLastName, txtCountry;
     private JComboBox<String> cmbLevel;
 
     // Quiz panel components
@@ -174,12 +174,6 @@ public class Manager extends JFrame {
         form.add(txtLastName, createGbc(1, row, 1));
         row++;
 
-        // Age
-        addFormLabel(form, row, "Age:");
-        txtAge = createStyledTextField(20);
-        form.add(txtAge, createGbc(1, row, 1));
-        row++;
-
         // Country
         addFormLabel(form, row, "Country:");
         txtCountry = createStyledTextField(20);
@@ -320,24 +314,11 @@ public class Manager extends JFrame {
         String firstName = txtFirstName.getText().trim();
         String middleName = txtMiddleName.getText().trim();
         String lastName = txtLastName.getText().trim();
-        String ageStr = txtAge.getText().trim();
         String country = txtCountry.getText().trim();
         String selectedLevel = (String) cmbLevel.getSelectedItem();
 
-        if (firstName.isEmpty() || lastName.isEmpty() || ageStr.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please fill in all required fields (First Name, Last Name, Age).",
-                    "Validation Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        int age;
-        try {
-            age = Integer.parseInt(ageStr);
-            if (age < 1 || age > 120) {
-                throw new NumberFormatException();
-            }
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Please enter a valid age (1-120).",
+        if (firstName.isEmpty() || lastName.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill in all required fields (First Name, Last Name).",
                     "Validation Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -349,7 +330,7 @@ public class Manager extends JFrame {
             name = new Name(firstName, middleName, lastName);
         }
         int id = competitorList.getNextId();
-        currentCompetitor = new HACompetitor(id, name, selectedLevel, age, country);
+        currentCompetitor = new HACompetitor(id, name, selectedLevel, country);
         currentLevel = 1;
         currentQuestionInLevel = 0;
         levelCorrect = 0;
@@ -571,7 +552,7 @@ public class Manager extends JFrame {
         tableWrapper.setBackground(BG_WHITE);
         tableWrapper.setBorder(new EmptyBorder(10, 15, 10, 15));
 
-        String[] columns = {"ID", "Name", "Level", "Country", "Age", "Score1", "Score2", "Score3", "Score4", "Score5", "Overall"};
+        String[] columns = {"ID", "Name", "Level", "Country", "Score1", "Score2", "Score3", "Score4", "Score5", "Overall"};
         DefaultTableModel model = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int col) { return false; }
@@ -584,7 +565,6 @@ public class Manager extends JFrame {
                 c.getCompetitorName().getFullName(),
                 c.getLevel(),
                 c.getCountry(),
-                c.getAge(),
                 scores[0], scores[1], scores[2], scores[3], scores[4],
                 c.getOverallScore()
             });

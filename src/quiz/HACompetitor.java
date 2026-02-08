@@ -2,48 +2,43 @@ package quiz;
 
 /**
  * Represents a competitor in the quiz competition.
- * Stores competitor details including ID, name, level, country, age, and scores.
+ * Stores competitor details including ID, name, level, country, and scores.
  */
 public class HACompetitor {
     private int competitorId;
     private Name competitorName;
     private String level;       // Beginner, Intermediate, Advanced
-    private int age;
     private String country;     // Extra attribute
     private int[] scores;       // Array of 5 scores (one per level)
 
-    public HACompetitor(int competitorId, Name competitorName, String level, int age) {
+    public HACompetitor(int competitorId, Name competitorName, String level) {
         this.competitorId = competitorId;
         this.competitorName = competitorName;
         this.level = level;
-        this.age = age;
         this.country = "";
         this.scores = new int[5];
     }
 
-    public HACompetitor(int competitorId, Name competitorName, String level, int age, int[] scores) {
+    public HACompetitor(int competitorId, Name competitorName, String level, int[] scores) {
         this.competitorId = competitorId;
         this.competitorName = competitorName;
         this.level = level;
-        this.age = age;
         this.country = "";
         setScores(scores);
     }
 
-    public HACompetitor(int competitorId, Name competitorName, String level, int age, String country) {
+    public HACompetitor(int competitorId, Name competitorName, String level, String country) {
         this.competitorId = competitorId;
         this.competitorName = competitorName;
         this.level = level;
-        this.age = age;
         this.country = country;
         this.scores = new int[5];
     }
 
-    public HACompetitor(int competitorId, Name competitorName, String level, int age, String country, int[] scores) {
+    public HACompetitor(int competitorId, Name competitorName, String level, String country, int[] scores) {
         this.competitorId = competitorId;
         this.competitorName = competitorName;
         this.level = level;
-        this.age = age;
         this.country = country;
         setScores(scores);
     }
@@ -71,14 +66,6 @@ public class HACompetitor {
 
     public void setLevel(String level) {
         this.level = level;
-    }
-
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
     }
 
     public String getCountry() {
@@ -126,7 +113,6 @@ public class HACompetitor {
         StringBuilder sb = new StringBuilder();
         sb.append("Competitor number ").append(competitorId);
         sb.append(", name ").append(competitorName.getFullName());
-        sb.append(", age ").append(age);
         if (!country.isEmpty()) {
             sb.append(", country ").append(country);
         }

@@ -53,15 +53,14 @@ public class TestRunner {
 
     private static void testCompetitorClass() {
         Name name = new Name("Alice", "Green");
-        HACompetitor c = new HACompetitor(200, name, "Beginner", 21);
+        HACompetitor c = new HACompetitor(200, name, "Beginner");
         test("getCompetitorId", c.getCompetitorId() == 200);
         test("getLevel", c.getLevel().equals("Beginner"));
-        test("getAge", c.getAge() == 21);
         test("getName", c.getCompetitorName().getFullName().equals("Alice Green"));
         test("getCountry default", c.getCountry().equals(""));
 
         // Test with country
-        HACompetitor cWithCountry = new HACompetitor(210, name, "Advanced", 25, "Nepal");
+        HACompetitor cWithCountry = new HACompetitor(210, name, "Advanced", "Nepal");
         test("getCountry", cWithCountry.getCountry().equals("Nepal"));
         cWithCountry.setCountry("UK");
         test("setCountry", cWithCountry.getCountry().equals("UK"));
@@ -84,7 +83,7 @@ public class TestRunner {
         test("getFullDetails contains score", full.contains("3.6"));
 
         // Full details with country
-        HACompetitor cFull = new HACompetitor(205, new Name("Bob", "Smith"), "Intermediate", 30, "Nepal", new int[]{3, 4, 3, 4, 3});
+        HACompetitor cFull = new HACompetitor(205, new Name("Bob", "Smith"), "Intermediate", "Nepal", new int[]{3, 4, 3, 4, 3});
         String fullWithCountry = cFull.getFullDetails();
         test("getFullDetails contains country", fullWithCountry.contains("Nepal"));
 
@@ -103,11 +102,9 @@ public class TestRunner {
         test("setCompetitorId", c.getCompetitorId() == 201);
         c.setLevel("Advanced");
         test("setLevel", c.getLevel().equals("Advanced"));
-        c.setAge(25);
-        test("setAge", c.getAge() == 25);
 
         // Test zero score is included in average
-        HACompetitor cZero = new HACompetitor(300, new Name("Test", "User"), "Beginner", 20,
+        HACompetitor cZero = new HACompetitor(300, new Name("Test", "User"), "Beginner",
                 new int[]{0, 4, 4, 4, 4});
         // Average of 0,4,4,4,4 = 16/5 = 3.2
         test("getOverallScore with zero", cZero.getOverallScore() == 3.2);
@@ -118,11 +115,11 @@ public class TestRunner {
         test("empty list size", list.getTotalCompetitors() == 0);
         test("getNextId initial", list.getNextId() == 200);
 
-        HACompetitor c1 = new HACompetitor(200, new Name("Alice", "Green"), "Beginner", 21,
+        HACompetitor c1 = new HACompetitor(200, new Name("Alice", "Green"), "Beginner",
                 new int[]{4, 3, 5, 2, 4});
-        HACompetitor c2 = new HACompetitor(201, new Name("Bob", "Brown"), "Intermediate", 25,
+        HACompetitor c2 = new HACompetitor(201, new Name("Bob", "Brown"), "Intermediate",
                 new int[]{3, 4, 4, 5, 4});
-        HACompetitor c3 = new HACompetitor(202, new Name("Carol", "White"), "Advanced", 30,
+        HACompetitor c3 = new HACompetitor(202, new Name("Carol", "White"), "Advanced",
                 new int[]{5, 5, 4, 4, 5});
 
         list.addCompetitor(c1);
