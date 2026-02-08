@@ -58,6 +58,13 @@ public class TestRunner {
         test("getLevel", c.getLevel().equals("Beginner"));
         test("getAge", c.getAge() == 21);
         test("getName", c.getCompetitorName().getFullName().equals("Alice Green"));
+        test("getCountry default", c.getCountry().equals(""));
+
+        // Test with country
+        HACompetitor cWithCountry = new HACompetitor(210, name, "Advanced", 25, "Nepal");
+        test("getCountry", cWithCountry.getCountry().equals("Nepal"));
+        cWithCountry.setCountry("UK");
+        test("setCountry", cWithCountry.getCountry().equals("UK"));
 
         // Test with scores
         int[] scores = {4, 3, 5, 2, 4};
@@ -75,6 +82,11 @@ public class TestRunner {
         test("getFullDetails contains name", full.contains("Alice Green"));
         test("getFullDetails contains level", full.contains("Beginner"));
         test("getFullDetails contains score", full.contains("3.6"));
+
+        // Full details with country
+        HACompetitor cFull = new HACompetitor(205, new Name("Bob", "Smith"), "Intermediate", 30, "Nepal", new int[]{3, 4, 3, 4, 3});
+        String fullWithCountry = cFull.getFullDetails();
+        test("getFullDetails contains country", fullWithCountry.contains("Nepal"));
 
         // Short details
         String shortD = c.getShortDetails();

@@ -66,15 +66,16 @@ public class CompetitorList {
         StringBuilder sb = new StringBuilder();
 
         // Competitor Table Header
-        sb.append(String.format("%-15s %-20s %-15s %-20s %-10s%n",
-                "Competitor ID", "Name", "Level", "Scores", "Overall"));
-        sb.append("=".repeat(80)).append("\n");
+        sb.append(String.format("%-15s %-20s %-15s %-12s %-20s %-10s%n",
+                "Competitor ID", "Name", "Level", "Country", "Scores", "Overall"));
+        sb.append("=".repeat(92)).append("\n");
 
         for (HACompetitor c : competitors) {
-            sb.append(String.format("%-15d %-20s %-15s %-20s %-10.1f%n",
+            sb.append(String.format("%-15d %-20s %-15s %-12s %-20s %-10.1f%n",
                     c.getCompetitorId(),
                     c.getCompetitorName().getFullName(),
                     c.getLevel(),
+                    c.getCountry(),
                     c.getScoresString(),
                     c.getOverallScore()));
         }

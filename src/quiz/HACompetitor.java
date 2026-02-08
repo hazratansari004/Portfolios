@@ -2,13 +2,14 @@ package quiz;
 
 /**
  * Represents a competitor in the quiz competition.
- * Stores competitor details including ID, name, level, age, and scores.
+ * Stores competitor details including ID, name, level, country, age, and scores.
  */
 public class HACompetitor {
     private int competitorId;
     private Name competitorName;
     private String level;       // Beginner, Intermediate, Advanced
-    private int age;            // Extra attribute
+    private int age;
+    private String country;     // Extra attribute
     private int[] scores;       // Array of 5 scores (one per level)
 
     public HACompetitor(int competitorId, Name competitorName, String level, int age) {
@@ -16,6 +17,7 @@ public class HACompetitor {
         this.competitorName = competitorName;
         this.level = level;
         this.age = age;
+        this.country = "";
         this.scores = new int[5];
     }
 
@@ -24,6 +26,25 @@ public class HACompetitor {
         this.competitorName = competitorName;
         this.level = level;
         this.age = age;
+        this.country = "";
+        setScores(scores);
+    }
+
+    public HACompetitor(int competitorId, Name competitorName, String level, int age, String country) {
+        this.competitorId = competitorId;
+        this.competitorName = competitorName;
+        this.level = level;
+        this.age = age;
+        this.country = country;
+        this.scores = new int[5];
+    }
+
+    public HACompetitor(int competitorId, Name competitorName, String level, int age, String country, int[] scores) {
+        this.competitorId = competitorId;
+        this.competitorName = competitorName;
+        this.level = level;
+        this.age = age;
+        this.country = country;
         setScores(scores);
     }
 
@@ -58,6 +79,14 @@ public class HACompetitor {
 
     public void setAge(int age) {
         this.age = age;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 
     public int[] getScoreArray() {
@@ -97,7 +126,11 @@ public class HACompetitor {
         StringBuilder sb = new StringBuilder();
         sb.append("Competitor number ").append(competitorId);
         sb.append(", name ").append(competitorName.getFullName());
-        sb.append(", age ").append(age).append(".\n");
+        sb.append(", age ").append(age);
+        if (!country.isEmpty()) {
+            sb.append(", country ").append(country);
+        }
+        sb.append(".\n");
         sb.append(competitorName.getFirstName()).append(" is a ").append(level);
         sb.append(" and received these scores: ");
         for (int i = 0; i < scores.length; i++) {
