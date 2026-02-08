@@ -32,6 +32,17 @@ public class CompetitorList {
         return null;
     }
 
+    /** Removes a competitor by their ID. Returns true if removed. */
+    public boolean removeCompetitorById(int id) {
+        for (int i = 0; i < competitors.size(); i++) {
+            if (competitors.get(i).getCompetitorId() == id) {
+                competitors.remove(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Returns the competitor with the highest overall score. */
     public HACompetitor getTopPerformer() {
         HACompetitor top = null;

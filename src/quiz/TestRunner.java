@@ -148,6 +148,12 @@ public class TestRunner {
         test("report contains header", report.contains("Competitor ID"));
         test("report contains competitor", report.contains("Alice Green"));
         test("report contains stats", report.contains("Total number of competitors: 3"));
+
+        // Remove competitor
+        test("removeCompetitorById found", list.removeCompetitorById(201));
+        test("list size after remove", list.getTotalCompetitors() == 2);
+        test("removed competitor gone", list.getCompetitorById(201) == null);
+        test("removeCompetitorById not found", !list.removeCompetitorById(999));
     }
 
     private static void testQuizData() {

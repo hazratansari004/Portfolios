@@ -114,9 +114,9 @@ public class Manager extends JFrame {
         btnStart.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnStart.addActionListener(e -> cardLayout.show(mainPanel, "REGISTER"));
 
-        JButton btnViewAllCompetitors = createStyledButton("View All Competitors", ACCENT_BLUE);
-        btnViewAllCompetitors.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btnViewAllCompetitors.addActionListener(e -> showViewAllCompetitors());
+        JButton btnManageCompetitors = createStyledButton("Manage Competitors", ACCENT_BLUE);
+        btnManageCompetitors.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnManageCompetitors.addActionListener(e -> showManageCompetitors());
 
         JButton btnReports = createStyledButton("Reports", TEXT_DARK);
         btnReports.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -132,7 +132,7 @@ public class Manager extends JFrame {
         center.add(Box.createVerticalStrut(30));
         center.add(btnStart);
         center.add(Box.createVerticalStrut(10));
-        center.add(btnViewAllCompetitors);
+        center.add(btnManageCompetitors);
         center.add(Box.createVerticalStrut(10));
         center.add(btnReports);
 
@@ -546,21 +546,21 @@ public class Manager extends JFrame {
         showReportPanel();
     }
 
-    // ==================== VIEW ALL COMPETITORS ====================
-    private void showViewAllCompetitors() {
+    // ==================== MANAGE COMPETITORS ====================
+    private void showManageCompetitors() {
         // Remove old panel
         for (Component c : mainPanel.getComponents()) {
-            if ("VIEW_ALL".equals(c.getName())) {
+            if ("MANAGE".equals(c.getName())) {
                 mainPanel.remove(c);
                 break;
             }
         }
 
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setName("VIEW_ALL");
+        panel.setName("MANAGE");
         panel.setBackground(BG_WHITE);
 
-        JLabel header = new JLabel("All Competitors", SwingConstants.CENTER);
+        JLabel header = new JLabel("Manage Competitors", SwingConstants.CENTER);
         header.setFont(new Font("Arial", Font.BOLD, 26));
         header.setForeground(TEXT_DARK);
         header.setBorder(new EmptyBorder(15, 0, 10, 0));
@@ -595,6 +595,7 @@ public class Manager extends JFrame {
         table.setRowHeight(26);
         table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 13));
         table.setGridColor(BORDER_LIGHT);
+        table.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
 
         if (competitorList.getTotalCompetitors() == 0) {
             JLabel empty = new JLabel("No competitors yet. Take the quiz first!", SwingConstants.CENTER);
@@ -607,18 +608,90 @@ public class Manager extends JFrame {
 
         panel.add(tableWrapper, BorderLayout.CENTER);
 
-        // Bottom
-        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        // Bottom bar with action buttons
+        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 8));
         bottom.setBackground(BG_LIGHT_GRAY);
         bottom.setBorder(new EmptyBorder(8, 0, 8, 0));
-        JButton btnHome = createStyledButton("Home", TEXT_DARK);
-        btnHome.addActionListener(e -> cardLayout.show(mainPanel, "WELCOME"));
-        bottom.add(btnHome);
+
+        JButton btnRefresh = createStyledButton("Refresh", ACCENT_BLUE);
+        btnRefresh.setPreferredSize(new Dimension(140, 42));
+        btnRefresh.setMaximumSize(new Dimension(140, 42));
+        btnRefresh.addActionListener(e -> showManageCompetitors());
+
+        JButton btnSearch = createStyledButton("Search", ACCENT_GREEN);
+        btnSearch.setPreferredSize(new Dimension(140, 42));
+        btnSearch.setMaximumSize(new Dimension(140, 42));
+        btnSearch.addActionListener(e -> {
+            String input = JOptionPane.showInputDialog(this,
+                    "Enter Competitor ID to search:", "Search Competitor", JOptionPane.QUESTION_MESSAGE);
+            if (input == null || input.trim().isEmpty()) return;
+            try {
+                int id = Integer.parseInt(input.trim());
+                HACompetitor found = competitorList.getCompetitorById(id);
+                if (found != null) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("Full Details:\n");
+                    sb.append(found.getFullDetails());
+                    sb.append("\n\nShort Details:\n");
+                    sb.append(found.getShortDetails());
+                    JOptionPane.showMessageDialog(this, sb.toString(),
+                            "Competitor Found", JOptionPane.INFORMATION_MESSAGE);
+                    // Highlight the row in the table
+                    for (int row = 0; row < model.getRowCount(); row++) {
+                        if ((int) model.getValueAt(row, 0) == id) {
+                            table.setRowSelectionInterval(row, row);
+                            table.scrollRectToVisible(table.getCellRect(row, 0, true));
+                            break;
+                        }
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                            "No competitor found with ID " + id + ".",
+                            "Not Found", JOptionPane.WARNING_MESSAGE);
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this,
+                        "Invalid ID. Please enter a numeric value.",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        JButton btnDelete = createStyledButton("Delete", ACCENT_RED);
+        btnDelete.setPreferredSize(new Dimension(140, 42));
+        btnDelete.setMaximumSize(new Dimension(140, 42));
+        btnDelete.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(this,
+                        "Please select a competitor from the table to delete.",
+                        "No Selection", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            int id = (int) model.getValueAt(selectedRow, 0);
+            String name = (String) model.getValueAt(selectedRow, 1);
+            int confirm = JOptionPane.showConfirmDialog(this,
+                    "Are you sure you want to delete competitor " + name + " (ID: " + id + ")?",
+                    "Confirm Delete", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (confirm == JOptionPane.YES_OPTION) {
+                competitorList.removeCompetitorById(id);
+                showManageCompetitors(); // Refresh the view
+            }
+        });
+
+        JButton btnBack = createStyledButton("Back", TEXT_DARK);
+        btnBack.setPreferredSize(new Dimension(140, 42));
+        btnBack.setMaximumSize(new Dimension(140, 42));
+        btnBack.addActionListener(e -> cardLayout.show(mainPanel, "WELCOME"));
+
+        bottom.add(btnRefresh);
+        bottom.add(btnSearch);
+        bottom.add(btnDelete);
+        bottom.add(btnBack);
 
         panel.add(bottom, BorderLayout.SOUTH);
 
-        mainPanel.add(panel, "VIEW_ALL");
-        cardLayout.show(mainPanel, "VIEW_ALL");
+        mainPanel.add(panel, "MANAGE");
+        cardLayout.show(mainPanel, "MANAGE");
     }
 
     // ==================== REPORT PANEL ====================
