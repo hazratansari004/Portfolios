@@ -859,9 +859,11 @@ public class Manager extends JFrame {
                 int id = Integer.parseInt(query);
                 HACompetitor c = competitorList.getCompetitorById(id);
                 if (c != null) {
-                    result.append("Search Result:\n\n");
+                    result.append("=== Search Result for ID ").append(id).append(" ===\n\n");
+                    result.append("Full Details:\n");
                     result.append(c.getFullDetails());
-                    result.append("\n\nShort Details: ").append(c.getShortDetails());
+                    result.append("\n\nShort Details:\n");
+                    result.append(c.getShortDetails());
                     found = true;
                 }
             } catch (NumberFormatException ex) {
@@ -874,11 +876,13 @@ public class Manager extends JFrame {
                 for (HACompetitor c : competitorList.getCompetitors()) {
                     if (c.getCompetitorName().getFullName().toLowerCase().contains(lowerQuery)) {
                         if (!found) {
-                            result.append("Search Results:\n\n");
+                            result.append("=== Search Results ===\n\n");
                         }
+                        result.append("Full Details:\n");
                         result.append(c.getFullDetails());
-                        result.append("\nShort: ").append(c.getShortDetails());
-                        result.append("\n\n");
+                        result.append("\n\nShort Details:\n");
+                        result.append(c.getShortDetails());
+                        result.append("\n\n---\n\n");
                         found = true;
                     }
                 }
