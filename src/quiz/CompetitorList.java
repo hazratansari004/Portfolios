@@ -7,15 +7,61 @@ import java.util.Map;
 
 /**
  * Manages a list of competitors and provides summary/statistics methods.
+ * Supports optional MySQL database integration via DatabaseConnection.
+ * When a database is connected, competitors are persisted automatically.
  */
 public class CompetitorList {
     private List<HACompetitor> competitors;
+    private DatabaseConnection dbConnection;
+    private boolean dbConnected;
 
     public CompetitorList() {
         competitors = new ArrayList<>();
+        dbConnection = null;
+        dbConnected = false;
+    }
+
+    /**
+     * Initializes database connection and loads existing competitors.
+     * @return true if database connection and setup were successful
+     */
+    public boolean initDatabase() {
+        dbConnection = new DatabaseConnection();
+        if (dbConnection.connect()) {
+            if (dbConnection.createTable()) {
+                dbConnected = true;
+                loadFromDatabase();
+                return true;
+            }
+            dbConnection.closeConnection();
+        }
+        dbConnected = false;
+        return false;
+    }
+
+    /** Loads all competitors from the database into the in-memory list. */
+    private void loadFromDatabase() {
+        if (dbConnected) {
+            List<HACompetitor> dbCompetitors = dbConnection.getAllCompetitors();
+            competitors.clear();
+            competitors.addAll(dbCompetitors);
+        }
+    }
+
+    /** Refreshes the in-memory list from the database. */
+    public void refreshFromDatabase() {
+        loadFromDatabase();
+    }
+
+    /** Returns whether the database is connected. */
+    public boolean isDatabaseConnected() {
+        return dbConnected;
     }
 
     public void addCompetitor(HACompetitor c) {
+        if (dbConnected) {
+            dbConnection.insertCompetitor(c);
+        }
         competitors.add(c);
     }
 
@@ -36,6 +82,9 @@ public class CompetitorList {
     public boolean removeCompetitorById(int id) {
         for (int i = 0; i < competitors.size(); i++) {
             if (competitors.get(i).getCompetitorId() == id) {
+                if (dbConnected) {
+                    dbConnection.deleteCompetitor(id);
+                }
                 competitors.remove(i);
                 return true;
             }
@@ -136,5 +185,12 @@ public class CompetitorList {
             }
         }
         return maxId + 1;
+    }
+
+    /** Closes the database connection if open. */
+    public void closeDatabase() {
+        if (dbConnection != null) {
+            dbConnection.closeConnection();
+        }
     }
 }

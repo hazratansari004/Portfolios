@@ -61,8 +61,16 @@ public class Manager extends JFrame {
         competitorList = new CompetitorList();
         levelScores = new int[5];
 
+        // Try to connect to MySQL database
+        boolean dbOk = competitorList.initDatabase();
+        if (dbOk) {
+            System.out.println("Connected to CompetitionDB database successfully.");
+        } else {
+            System.out.println("Database not available. Running in offline mode (data stored in memory only).");
+        }
+
         setTitle("Quiz Competition Management");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(900, 650);
         setLocationRelativeTo(null);
         setResizable(false);
@@ -77,6 +85,15 @@ public class Manager extends JFrame {
 
         add(mainPanel);
         cardLayout.show(mainPanel, "WELCOME");
+
+        // Close database connection on window close
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent e) {
+                competitorList.closeDatabase();
+                System.exit(0);
+            }
+        });
     }
 
     // ==================== WELCOME PANEL ====================
@@ -135,6 +152,17 @@ public class Manager extends JFrame {
         center.add(btnManageCompetitors);
         center.add(Box.createVerticalStrut(10));
         center.add(btnReports);
+
+        // Database status indicator
+        center.add(Box.createVerticalStrut(15));
+        String dbStatus = competitorList.isDatabaseConnected()
+                ? "Database: Connected (MySQL)"
+                : "Database: Offline (In-Memory)";
+        JLabel lblDb = new JLabel(dbStatus);
+        lblDb.setFont(new Font("Arial", Font.ITALIC, 12));
+        lblDb.setForeground(competitorList.isDatabaseConnected() ? ACCENT_GREEN : TEXT_SECONDARY);
+        lblDb.setAlignmentX(Component.CENTER_ALIGNMENT);
+        center.add(lblDb);
 
         panel.add(center, BorderLayout.CENTER);
         return panel;
