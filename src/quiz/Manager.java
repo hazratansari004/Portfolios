@@ -182,71 +182,132 @@ public class Manager extends JFrame {
         JPanel form = new JPanel(new GridBagLayout());
         form.setBackground(BG_WHITE);
 
-        int row = 0;
+        // First Name label
+        JLabel lblFirstName = new JLabel("First Name:");
+        lblFirstName.setFont(new Font("Arial", Font.PLAIN, 15));
+        lblFirstName.setForeground(TEXT_DARK);
+        GridBagConstraints gbcLblFirstName = new GridBagConstraints();
+        gbcLblFirstName.insets = new Insets(8, 10, 8, 10);
+        gbcLblFirstName.fill = GridBagConstraints.HORIZONTAL;
+        gbcLblFirstName.gridx = 0;
+        gbcLblFirstName.gridy = 0;
+        form.add(lblFirstName, gbcLblFirstName);
 
-        // First Name
-        addFormLabel(form, row, "First Name:");
+        // First Name field
         txtFirstName = createStyledTextField(20);
-        form.add(txtFirstName, createGbc(1, row, 1));
-        row++;
+        GridBagConstraints gbcTxtFirstName = new GridBagConstraints();
+        gbcTxtFirstName.insets = new Insets(8, 10, 8, 10);
+        gbcTxtFirstName.fill = GridBagConstraints.HORIZONTAL;
+        gbcTxtFirstName.gridx = 1;
+        gbcTxtFirstName.gridy = 0;
+        form.add(txtFirstName, gbcTxtFirstName);
 
-        // Middle Name
-        addFormLabel(form, row, "Middle Name:");
+        // Middle Name label
+        JLabel lblMiddleName = new JLabel("Middle Name:");
+        lblMiddleName.setFont(new Font("Arial", Font.PLAIN, 15));
+        lblMiddleName.setForeground(TEXT_DARK);
+        GridBagConstraints gbcLblMiddleName = new GridBagConstraints();
+        gbcLblMiddleName.insets = new Insets(8, 10, 8, 10);
+        gbcLblMiddleName.fill = GridBagConstraints.HORIZONTAL;
+        gbcLblMiddleName.gridx = 0;
+        gbcLblMiddleName.gridy = 1;
+        form.add(lblMiddleName, gbcLblMiddleName);
+
+        // Middle Name field
         txtMiddleName = createStyledTextField(20);
-        form.add(txtMiddleName, createGbc(1, row, 1));
-        row++;
+        GridBagConstraints gbcTxtMiddleName = new GridBagConstraints();
+        gbcTxtMiddleName.insets = new Insets(8, 10, 8, 10);
+        gbcTxtMiddleName.fill = GridBagConstraints.HORIZONTAL;
+        gbcTxtMiddleName.gridx = 1;
+        gbcTxtMiddleName.gridy = 1;
+        form.add(txtMiddleName, gbcTxtMiddleName);
 
-        // Last Name
-        addFormLabel(form, row, "Last Name:");
+        // Last Name label
+        JLabel lblLastName = new JLabel("Last Name:");
+        lblLastName.setFont(new Font("Arial", Font.PLAIN, 15));
+        lblLastName.setForeground(TEXT_DARK);
+        GridBagConstraints gbcLblLastName = new GridBagConstraints();
+        gbcLblLastName.insets = new Insets(8, 10, 8, 10);
+        gbcLblLastName.fill = GridBagConstraints.HORIZONTAL;
+        gbcLblLastName.gridx = 0;
+        gbcLblLastName.gridy = 2;
+        form.add(lblLastName, gbcLblLastName);
+
+        // Last Name field
         txtLastName = createStyledTextField(20);
-        form.add(txtLastName, createGbc(1, row, 1));
-        row++;
+        GridBagConstraints gbcTxtLastName = new GridBagConstraints();
+        gbcTxtLastName.insets = new Insets(8, 10, 8, 10);
+        gbcTxtLastName.fill = GridBagConstraints.HORIZONTAL;
+        gbcTxtLastName.gridx = 1;
+        gbcTxtLastName.gridy = 2;
+        form.add(txtLastName, gbcTxtLastName);
 
-        // Country
-        addFormLabel(form, row, "Country:");
+        // Country label
+        JLabel lblCountry = new JLabel("Country:");
+        lblCountry.setFont(new Font("Arial", Font.PLAIN, 15));
+        lblCountry.setForeground(TEXT_DARK);
+        GridBagConstraints gbcLblCountry = new GridBagConstraints();
+        gbcLblCountry.insets = new Insets(8, 10, 8, 10);
+        gbcLblCountry.fill = GridBagConstraints.HORIZONTAL;
+        gbcLblCountry.gridx = 0;
+        gbcLblCountry.gridy = 3;
+        form.add(lblCountry, gbcLblCountry);
+
+        // Country field
         txtCountry = createStyledTextField(20);
-        form.add(txtCountry, createGbc(1, row, 1));
-        row++;
+        GridBagConstraints gbcTxtCountry = new GridBagConstraints();
+        gbcTxtCountry.insets = new Insets(8, 10, 8, 10);
+        gbcTxtCountry.fill = GridBagConstraints.HORIZONTAL;
+        gbcTxtCountry.gridx = 1;
+        gbcTxtCountry.gridy = 3;
+        form.add(txtCountry, gbcTxtCountry);
 
-        // Level
-        addFormLabel(form, row, "Level:");
+        // Level label
+        JLabel lblLevel = new JLabel("Level:");
+        lblLevel.setFont(new Font("Arial", Font.PLAIN, 15));
+        lblLevel.setForeground(TEXT_DARK);
+        GridBagConstraints gbcLblLevel = new GridBagConstraints();
+        gbcLblLevel.insets = new Insets(8, 10, 8, 10);
+        gbcLblLevel.fill = GridBagConstraints.HORIZONTAL;
+        gbcLblLevel.gridx = 0;
+        gbcLblLevel.gridy = 4;
+        form.add(lblLevel, gbcLblLevel);
+
+        // Level combo box
         cmbLevel = new JComboBox<>(new String[]{"Beginner", "Intermediate", "Advanced"});
         cmbLevel.setFont(new Font("Arial", Font.PLAIN, 15));
         cmbLevel.setBackground(BG_WHITE);
-        form.add(cmbLevel, createGbc(1, row, 1));
-        row++;
+        GridBagConstraints gbcCmbLevel = new GridBagConstraints();
+        gbcCmbLevel.insets = new Insets(8, 10, 8, 10);
+        gbcCmbLevel.fill = GridBagConstraints.HORIZONTAL;
+        gbcCmbLevel.gridx = 1;
+        gbcCmbLevel.gridy = 4;
+        form.add(cmbLevel, gbcCmbLevel);
 
         // Begin Quiz button
         JButton btnRegister = createStyledButton("Begin Quiz", ACCENT_GREEN);
-        form.add(btnRegister, createGbc(0, row, 2));
+        GridBagConstraints gbcBtnRegister = new GridBagConstraints();
+        gbcBtnRegister.insets = new Insets(8, 10, 8, 10);
+        gbcBtnRegister.fill = GridBagConstraints.HORIZONTAL;
+        gbcBtnRegister.gridx = 0;
+        gbcBtnRegister.gridy = 5;
+        gbcBtnRegister.gridwidth = 2;
+        form.add(btnRegister, gbcBtnRegister);
         btnRegister.addActionListener(e -> startQuiz());
-        row++;
 
         // Back button
         JButton btnBack = createStyledButton("Back", TEXT_SECONDARY);
-        form.add(btnBack, createGbc(0, row, 2));
+        GridBagConstraints gbcBtnBack = new GridBagConstraints();
+        gbcBtnBack.insets = new Insets(8, 10, 8, 10);
+        gbcBtnBack.fill = GridBagConstraints.HORIZONTAL;
+        gbcBtnBack.gridx = 0;
+        gbcBtnBack.gridy = 6;
+        gbcBtnBack.gridwidth = 2;
+        form.add(btnBack, gbcBtnBack);
         btnBack.addActionListener(e -> cardLayout.show(mainPanel, "WELCOME"));
 
         panel.add(form, BorderLayout.CENTER);
         return panel;
-    }
-
-    /** Creates a new GridBagConstraints instance for each component. */
-    private GridBagConstraints createGbc(int gridx, int gridy, int gridwidth) {
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 10, 8, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridx = gridx;
-        gbc.gridy = gridy;
-        gbc.gridwidth = gridwidth;
-        return gbc;
-    }
-
-    private void addFormLabel(JPanel form, int row, String text) {
-        JLabel lbl = new JLabel(text);
-        lbl.setFont(new Font("Arial", Font.PLAIN, 15));
-        lbl.setForeground(TEXT_DARK);
-        form.add(lbl, createGbc(0, row, 1));
     }
 
     private JTextField createStyledTextField(int columns) {
