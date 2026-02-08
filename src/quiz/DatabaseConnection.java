@@ -26,6 +26,27 @@ public class DatabaseConnection {
 
     private Connection connection;
 
+    /**
+     * Static convenience method to get a database connection.
+     * Matches the coursework specification pattern.
+     * @return a new Connection to the CompetitionDB database
+     * @throws SQLException if the connection cannot be established
+     */
+    public static Connection getStaticConnection() throws SQLException {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+        } catch (ClassNotFoundException e) {
+            String msg = "MySQL JDBC Driver not found. Please add MySQL Connector/J to your project's classpath.\n"
+                       + "Download it from: https://dev.mysql.com/downloads/connector/j/\n"
+                       + "In Eclipse: Project -> Properties -> Java Build Path -> Libraries -> Add External JARs...\n"
+                       + "Or when running from terminal, include the jar on the classpath, e.g.:\n"
+                       + "  javac -cp .:mysql-connector-java-8.x.xx.jar quiz/Manager.java\n"
+                       + "  java -cp .:mysql-connector-java-8.x.xx.jar quiz.Manager";
+            throw new SQLException(msg, e);
+        }
+    }
+
     /** Creates a new DatabaseConnection instance. */
     public DatabaseConnection() {
         this.connection = null;
@@ -41,7 +62,12 @@ public class DatabaseConnection {
             connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
             return true;
         } catch (ClassNotFoundException e) {
-            System.err.println("MySQL JDBC Driver not found: " + e.getMessage());
+            System.err.println("MySQL JDBC Driver not found. Please add MySQL Connector/J to your project's classpath.\n"
+                    + "Download it from: https://dev.mysql.com/downloads/connector/j/\n"
+                    + "In Eclipse: Project -> Properties -> Java Build Path -> Libraries -> Add External JARs...\n"
+                    + "Or when running from terminal, include the jar on the classpath, e.g.:\n"
+                    + "  javac -cp .:mysql-connector-java-8.x.xx.jar quiz/Manager.java\n"
+                    + "  java -cp .:mysql-connector-java-8.x.xx.jar quiz.Manager");
             return false;
         } catch (SQLException e) {
             System.err.println("Database connection failed: " + e.getMessage());
