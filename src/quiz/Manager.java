@@ -127,15 +127,42 @@ public class Manager extends JFrame {
         sep.setMaximumSize(new Dimension(400, 1));
         sep.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JButton btnStart = createStyledButton("Start Quiz", ACCENT_GREEN);
+        JButton btnStart = new JButton("Start Quiz");
+        btnStart.setFont(new Font("Arial", Font.BOLD, 15));
+        btnStart.setBackground(ACCENT_GREEN);
+        btnStart.setForeground(Color.WHITE);
+        btnStart.setFocusPainted(false);
+        btnStart.setBorderPainted(false);
+        btnStart.setOpaque(true);
+        btnStart.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnStart.setPreferredSize(new Dimension(250, 42));
+        btnStart.setMaximumSize(new Dimension(300, 42));
         btnStart.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnStart.addActionListener(e -> cardLayout.show(mainPanel, "REGISTER"));
 
-        JButton btnManageCompetitors = createStyledButton("Manage Competitors", ACCENT_BLUE);
+        JButton btnManageCompetitors = new JButton("Manage Competitors");
+        btnManageCompetitors.setFont(new Font("Arial", Font.BOLD, 15));
+        btnManageCompetitors.setBackground(ACCENT_BLUE);
+        btnManageCompetitors.setForeground(Color.WHITE);
+        btnManageCompetitors.setFocusPainted(false);
+        btnManageCompetitors.setBorderPainted(false);
+        btnManageCompetitors.setOpaque(true);
+        btnManageCompetitors.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnManageCompetitors.setPreferredSize(new Dimension(250, 42));
+        btnManageCompetitors.setMaximumSize(new Dimension(300, 42));
         btnManageCompetitors.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnManageCompetitors.addActionListener(e -> showManageCompetitors());
 
-        JButton btnReports = createStyledButton("Reports", TEXT_DARK);
+        JButton btnReports = new JButton("Reports");
+        btnReports.setFont(new Font("Arial", Font.BOLD, 15));
+        btnReports.setBackground(TEXT_DARK);
+        btnReports.setForeground(Color.WHITE);
+        btnReports.setFocusPainted(false);
+        btnReports.setBorderPainted(false);
+        btnReports.setOpaque(true);
+        btnReports.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnReports.setPreferredSize(new Dimension(250, 42));
+        btnReports.setMaximumSize(new Dimension(300, 42));
         btnReports.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnReports.addActionListener(e -> showReportPanel());
 
@@ -285,7 +312,16 @@ public class Manager extends JFrame {
         form.add(cmbLevel, gbcCmbLevel);
 
         // Begin Quiz button
-        JButton btnRegister = createStyledButton("Begin Quiz", ACCENT_GREEN);
+        JButton btnRegister = new JButton("Begin Quiz");
+        btnRegister.setFont(new Font("Arial", Font.BOLD, 15));
+        btnRegister.setBackground(ACCENT_GREEN);
+        btnRegister.setForeground(Color.WHITE);
+        btnRegister.setFocusPainted(false);
+        btnRegister.setBorderPainted(false);
+        btnRegister.setOpaque(true);
+        btnRegister.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnRegister.setPreferredSize(new Dimension(250, 42));
+        btnRegister.setMaximumSize(new Dimension(300, 42));
         GridBagConstraints gbcBtnRegister = new GridBagConstraints();
         gbcBtnRegister.insets = new Insets(8, 10, 8, 10);
         gbcBtnRegister.fill = GridBagConstraints.HORIZONTAL;
@@ -296,7 +332,16 @@ public class Manager extends JFrame {
         btnRegister.addActionListener(e -> startQuiz());
 
         // Back button
-        JButton btnBack = createStyledButton("Back", TEXT_SECONDARY);
+        JButton btnBack = new JButton("Back");
+        btnBack.setFont(new Font("Arial", Font.BOLD, 15));
+        btnBack.setBackground(TEXT_SECONDARY);
+        btnBack.setForeground(Color.WHITE);
+        btnBack.setFocusPainted(false);
+        btnBack.setBorderPainted(false);
+        btnBack.setOpaque(true);
+        btnBack.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnBack.setPreferredSize(new Dimension(250, 42));
+        btnBack.setMaximumSize(new Dimension(300, 42));
         GridBagConstraints gbcBtnBack = new GridBagConstraints();
         gbcBtnBack.insets = new Insets(8, 10, 8, 10);
         gbcBtnBack.fill = GridBagConstraints.HORIZONTAL;
