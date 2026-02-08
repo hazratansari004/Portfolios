@@ -42,6 +42,8 @@ public class Manager extends JFrame {
     private Timer questionTimer;
     private int timeRemaining;
     private static final int TIME_PER_QUESTION = 15; // seconds per question
+    private static final int ADVANCED_THRESHOLD = 80;
+    private static final int INTERMEDIATE_THRESHOLD = 50;
 
     public Manager() {
         competitorList = new CompetitorList();
@@ -197,7 +199,7 @@ public class Manager extends JFrame {
 
         lblTimer = new JLabel("Time: 15s");
         lblTimer.setFont(new Font("Arial", Font.BOLD, 18));
-        lblTimer.setForeground(new Color(231, 76, 60));
+        lblTimer.setForeground(Color.WHITE);
 
         lblProgress = new JLabel("Q1/25 (0%)");
         lblProgress.setFont(new Font("Arial", Font.BOLD, 14));
@@ -453,8 +455,8 @@ public class Manager extends JFrame {
         // Determine level based on total score
         String level;
         int totalPercent = totalCorrect * 4;
-        if (totalPercent >= 80) level = "Advanced";
-        else if (totalPercent >= 50) level = "Intermediate";
+        if (totalPercent >= ADVANCED_THRESHOLD) level = "Advanced";
+        else if (totalPercent >= INTERMEDIATE_THRESHOLD) level = "Intermediate";
         else level = "Beginner";
 
         currentCompetitor.setLevel(level);

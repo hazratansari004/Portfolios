@@ -80,6 +80,9 @@ public class TestRunner {
         String shortD = c.getShortDetails();
         test("getShortDetails format", shortD.equals("CN 200 (AG) has an overall score of 3.6."));
 
+        // Test getFullDetails uses gender-neutral pronoun
+        test("getFullDetails uses them", full.contains("This gives them"));
+
         // Test scores string
         test("getScoresString", c.getScoresString().equals("4 3 5 2 4"));
 
@@ -90,6 +93,12 @@ public class TestRunner {
         test("setLevel", c.getLevel().equals("Advanced"));
         c.setAge(25);
         test("setAge", c.getAge() == 25);
+
+        // Test zero score is included in average
+        HACompetitor cZero = new HACompetitor(300, new Name("Test", "User"), "Beginner", 20,
+                new int[]{0, 4, 4, 4, 4});
+        // Average of 0,4,4,4,4 = 16/5 = 3.2
+        test("getOverallScore with zero", cZero.getOverallScore() == 3.2);
     }
 
     private static void testCompetitorList() {

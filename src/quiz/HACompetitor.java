@@ -84,15 +84,10 @@ public class HACompetitor {
      */
     public double getOverallScore() {
         int sum = 0;
-        int count = 0;
         for (int s : scores) {
-            if (s > 0) {
-                sum += s;
-                count++;
-            }
+            sum += s;
         }
-        if (count == 0) return 0.0;
-        return Math.round((sum / (double) count) * 10.0) / 10.0;
+        return Math.round((sum / (double) scores.length) * 10.0) / 10.0;
     }
 
     /**
@@ -109,9 +104,7 @@ public class HACompetitor {
             sb.append(scores[i]);
             if (i < scores.length - 1) sb.append(", ");
         }
-        sb.append(".\nThis gives ");
-        sb.append(competitorName.getFirstName().toLowerCase().endsWith("a") ? "her" : "him");
-        sb.append(" an overall score of ").append(getOverallScore()).append(".");
+        sb.append(".\nThis gives them an overall score of ").append(getOverallScore()).append(".");
         return sb.toString();
     }
 
