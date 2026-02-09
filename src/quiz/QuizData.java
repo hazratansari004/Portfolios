@@ -1,3 +1,4 @@
+
 package quiz;
 
 import java.util.ArrayList;
@@ -6,8 +7,6 @@ import java.util.List;
 /**
  * Provides 25 quiz questions across 5 levels (5 questions per level).
  * Topics cover general knowledge, science, geography, technology, and sports.
- *
- * @author Sailesh Kumar Mandal
  */
 public class QuizData {
 
