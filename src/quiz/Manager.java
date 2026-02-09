@@ -221,7 +221,11 @@ public class Manager extends JFrame {
         form.add(lblFirstName, gbcLblFirstName);
 
         // First Name field
-        txtFirstName = createStyledTextField(20);
+        txtFirstName = new JTextField(20);
+        txtFirstName.setFont(new Font("Arial", Font.PLAIN, 15));
+        txtFirstName.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(BORDER_LIGHT, 1, true),
+                new EmptyBorder(5, 8, 5, 8)));
         GridBagConstraints gbcTxtFirstName = new GridBagConstraints();
         gbcTxtFirstName.insets = new Insets(8, 10, 8, 10);
         gbcTxtFirstName.fill = GridBagConstraints.HORIZONTAL;
@@ -241,7 +245,11 @@ public class Manager extends JFrame {
         form.add(lblMiddleName, gbcLblMiddleName);
 
         // Middle Name field
-        txtMiddleName = createStyledTextField(20);
+        txtMiddleName = new JTextField(20);
+        txtMiddleName.setFont(new Font("Arial", Font.PLAIN, 15));
+        txtMiddleName.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(BORDER_LIGHT, 1, true),
+                new EmptyBorder(5, 8, 5, 8)));
         GridBagConstraints gbcTxtMiddleName = new GridBagConstraints();
         gbcTxtMiddleName.insets = new Insets(8, 10, 8, 10);
         gbcTxtMiddleName.fill = GridBagConstraints.HORIZONTAL;
@@ -261,7 +269,11 @@ public class Manager extends JFrame {
         form.add(lblLastName, gbcLblLastName);
 
         // Last Name field
-        txtLastName = createStyledTextField(20);
+        txtLastName = new JTextField(20);
+        txtLastName.setFont(new Font("Arial", Font.PLAIN, 15));
+        txtLastName.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(BORDER_LIGHT, 1, true),
+                new EmptyBorder(5, 8, 5, 8)));
         GridBagConstraints gbcTxtLastName = new GridBagConstraints();
         gbcTxtLastName.insets = new Insets(8, 10, 8, 10);
         gbcTxtLastName.fill = GridBagConstraints.HORIZONTAL;
@@ -281,7 +293,11 @@ public class Manager extends JFrame {
         form.add(lblCountry, gbcLblCountry);
 
         // Country field
-        txtCountry = createStyledTextField(20);
+        txtCountry = new JTextField(20);
+        txtCountry.setFont(new Font("Arial", Font.PLAIN, 15));
+        txtCountry.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(BORDER_LIGHT, 1, true),
+                new EmptyBorder(5, 8, 5, 8)));
         GridBagConstraints gbcTxtCountry = new GridBagConstraints();
         gbcTxtCountry.insets = new Insets(8, 10, 8, 10);
         gbcTxtCountry.fill = GridBagConstraints.HORIZONTAL;
