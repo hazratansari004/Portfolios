@@ -2,24 +2,23 @@
 
 ## Mermaid Code
 
-Copy the code below into [Mermaid Live Editor](https://mermaid.live) to view the diagram.
+Copy **everything** between the triple backticks into [Mermaid Live Editor](https://mermaid.live) to view the diagram.
 
 ```mermaid
 classDiagram
-    direction TB
 
     class Name {
         -String firstName
         -String middleName
         -String lastName
-        +Name(String firstName, String lastName)
-        +Name(String firstName, String middleName, String lastName)
+        +Name(firstName, lastName)
+        +Name(firstName, middleName, lastName)
         +getFirstName() String
-        +setFirstName(String firstName) void
+        +setFirstName(firstName)
         +getMiddleName() String
-        +setMiddleName(String middleName) void
+        +setMiddleName(middleName)
         +getLastName() String
-        +setLastName(String lastName) void
+        +setLastName(lastName)
         +getFullName() String
         +getInitials() String
         +toString() String
@@ -31,88 +30,92 @@ classDiagram
         -String level
         -String country
         -int[] scores
-        +SKMCompetitor(int id, Name name, String level)
-        +SKMCompetitor(int id, Name name, String level, int[] scores)
-        +SKMCompetitor(int id, Name name, String level, String country)
-        +SKMCompetitor(int id, Name name, String level, String country, int[] scores)
+        +SKMCompetitor(id, name, level)
+        +SKMCompetitor(id, name, level, scores)
+        +SKMCompetitor(id, name, level, country)
+        +SKMCompetitor(id, name, level, country, scores)
         +getCompetitorId() int
-        +setCompetitorId(int id) void
+        +setCompetitorId(id)
         +getCompetitorName() Name
-        +setCompetitorName(Name name) void
+        +setCompetitorName(name)
         +getLevel() String
-        +setLevel(String level) void
+        +setLevel(level)
         +getCountry() String
-        +setCountry(String country) void
+        +setCountry(country)
         +getScoreArray() int[]
-        +setScores(int[] scores) void
-        +setScore(int index, int value) void
+        +setScores(scores)
+        +setScore(index, value)
         +getOverallScore() double
         +getFullDetails() String
         +getShortDetails() String
         +getScoresString() String
-        +saveToDatabase(Connection conn) boolean
-        +updateInDatabase(Connection conn) boolean
-        +deleteFromDatabase(Connection conn) boolean
-        +readFromDatabase(Connection conn, int id)$ SKMCompetitor
-        +readAllFromDatabase(Connection conn)$ List~SKMCompetitor~
+        +saveToDatabase(conn) boolean
+        +updateInDatabase(conn) boolean
+        +deleteFromDatabase(conn) boolean
+        +readFromDatabase(conn, id) SKMCompetitor
+        +readAllFromDatabase(conn) List
     }
 
     class QuizQuestion {
         -String question
         -String[] options
         -int correctAnswerIndex
-        +QuizQuestion(String question, String optA, String optB, String optC, String optD, int correct)
+        +QuizQuestion(question, optA, optB, optC, optD, correct)
         +getQuestion() String
         +getOptions() String[]
         +getCorrectAnswerIndex() int
-        +isCorrect(int selectedIndex) boolean
+        +isCorrect(selectedIndex) boolean
     }
 
     class QuizData {
-        +getAllQuestions()$ List~QuizQuestion~
-        +getQuestionsForLevel(int level)$ List~QuizQuestion~
-        +getLevelName(int level)$ String
+        +getAllQuestions() List
+        +getQuestionsForLevel(level) List
+        +getLevelName(level) String
     }
 
     class CompetitorList {
-        -List~SKMCompetitor~ competitors
+        -List competitors
         -DatabaseConnection dbConnection
         -boolean dbConnected
         +CompetitorList()
         +initDatabase() boolean
-        -loadFromDatabase() void
-        +refreshFromDatabase() void
+        -loadFromDatabase()
+        +refreshFromDatabase()
         +isDatabaseConnected() boolean
-        +addCompetitor(SKMCompetitor c) void
-        +getCompetitors() List~SKMCompetitor~
-        +getCompetitorById(int id) SKMCompetitor
-        +removeCompetitorById(int id) boolean
+        +addCompetitor(c)
+        +getCompetitors() List
+        +getCompetitorById(id) SKMCompetitor
+        +removeCompetitorById(id) boolean
         +getTopPerformer() SKMCompetitor
         +getTotalCompetitors() int
-        +getScoreFrequency() Map~Integer, Integer~
+        +getScoreFrequency() Map
         +generateReport() String
         +getNextId() int
-        +closeDatabase() void
+        +closeDatabase()
     }
 
     class DatabaseConnection {
         -Connection connection
-        -String DB_URL$
-        -String DB_USER$
-        -String DB_PASSWORD$
-        +getStaticConnection()$ Connection
+        -String DB_URL
+        -String DB_USER
+        -String DB_PASSWORD
+        +getStaticConnection() Connection
         +DatabaseConnection()
         +connect() boolean
         +getConnection() Connection
         +isConnected() boolean
         +createTable() boolean
-        +insertCompetitor(SKMCompetitor c) boolean
-        +getAllCompetitors() List~SKMCompetitor~
-        +getCompetitorById(int id) SKMCompetitor
-        +deleteCompetitor(int id) boolean
-        +updateCompetitor(SKMCompetitor c) boolean
-        +closeConnection() void
-        -resultSetToCompetitor(ResultSet rs) SKMCompetitor
+        +insertCompetitor(c) boolean
+        +getAllCompetitors() List
+        +getCompetitorById(id) SKMCompetitor
+        +deleteCompetitor(id) boolean
+        +updateCompetitor(c) boolean
+        +closeConnection()
+        -resultSetToCompetitor(rs) SKMCompetitor
+    }
+
+    class JFrame {
+        <<Java Swing>>
     }
 
     class Manager {
@@ -123,8 +126,7 @@ classDiagram
         -JTextField txtMiddleName
         -JTextField txtLastName
         -JTextField txtCountry
-        -JComboBox~String~ cmbLevel
-        -JLabel lblLevel
+        -JComboBox cmbLevel
         -JLabel lblQuestion
         -JLabel lblTimer
         -JLabel lblProgress
@@ -140,37 +142,34 @@ classDiagram
         -int[] levelScores
         -Timer questionTimer
         -int timeRemaining
-        -int TIME_PER_QUESTION$
         +Manager()
         -createWelcomePanel() JPanel
         -createRegistrationPanel() JPanel
-        -createStyledTextField(int columns) JTextField
         -createQuizPanel() JPanel
-        -startQuiz() void
-        -loadQuestion() void
-        -handleAnswer() void
-        -showLevelComplete() void
-        -finishQuiz() void
-        -showManageCompetitors() void
-        -showReportPanel() void
+        -startQuiz()
+        -loadQuestion()
+        -handleAnswer()
+        -showLevelComplete()
+        -finishQuiz()
+        -showManageCompetitors()
+        -showReportPanel()
         -createCompetitorTablePanel() JPanel
         -createTopPerformerPanel() JPanel
         -createStatisticsPanel() JPanel
         -createSearchPanel() JPanel
         -createFullReportPanel() JPanel
-        -createStyledButton(String text, Color bg) JButton
-        +main(String[] args)$ void
+        -createStyledButton(text, bg) JButton
+        +main(args)
     }
 
-    %% Associations
-    SKMCompetitor "1" *-- "1" Name : has-a
-    CompetitorList "1" *-- "0..*" SKMCompetitor : manages
-    CompetitorList "1" o-- "0..1" DatabaseConnection : uses
-    Manager "1" *-- "1" CompetitorList : contains
-    Manager "1" o-- "0..1" SKMCompetitor : currentCompetitor
+    SKMCompetitor *-- Name : has-a
+    CompetitorList *-- SKMCompetitor : manages
+    CompetitorList o-- DatabaseConnection : uses
+    Manager *-- CompetitorList : contains
+    Manager o-- SKMCompetitor : currentCompetitor
     Manager --|> JFrame : extends
     QuizData ..> QuizQuestion : creates
-    DatabaseConnection ..> SKMCompetitor : reads/writes
+    DatabaseConnection ..> SKMCompetitor : reads-writes
 ```
 
 ## Associations Key
