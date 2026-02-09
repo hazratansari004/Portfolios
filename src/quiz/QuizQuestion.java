@@ -2,8 +2,6 @@ package quiz;
 
 /**
  * Represents a single quiz question with four answer options.
- *
- * @author Sailesh Kumar Mandal
  */
 public class QuizQuestion {
     private String question;
