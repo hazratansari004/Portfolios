@@ -1,9 +1,8 @@
+
 package quiz;
 
 /**
  * Represents a competitor's name with first, middle (optional), and last name.
- *
- * @author Sailesh Kumar Mandal
  */
 public class Name {
     private String firstName;
