@@ -9,14 +9,9 @@ import java.util.List;
  */
 public class DatabaseConnection {
 
-    // Database configuration — update these for your MySQL setup
-    // For production, use environment variables or a config file instead
-    private static final String DB_URL = System.getenv("DB_URL") != null
-            ? System.getenv("DB_URL") : "jdbc:mysql://localhost:3306/CompetitionDB";
-    private static final String DB_USER = System.getenv("DB_USER") != null
-            ? System.getenv("DB_USER") : "root";
-    private static final String DB_PASSWORD = System.getenv("DB_PASSWORD") != null
-            ? System.getenv("DB_PASSWORD") : "";
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/CompetitorDB";
+    private static final String DB_USER = "root";
+    private static final String DB_PASSWORD = "";
 
     private Connection connection;
 
