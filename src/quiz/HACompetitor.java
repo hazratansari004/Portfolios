@@ -1,8 +1,13 @@
 package quiz;
 
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Represents a competitor in the quiz competition.
  * Stores competitor details including ID, name, level, country, and scores.
+ * Includes methods to read from and write to the MySQL database using JDBC.
  */
 public class HACompetitor {
     private int competitorId;
@@ -142,5 +147,149 @@ public class HACompetitor {
             if (i < scores.length - 1) sb.append(" ");
         }
         return sb.toString();
+    }
+
+    // ==================== DATABASE METHODS (JDBC) ====================
+
+    /**
+     * Saves this competitor to the MySQL database.
+     * @param conn an active JDBC Connection to CompetitionDB
+     * @return true if the insert was successful, false otherwise
+     */
+    public boolean saveToDatabase(Connection conn) {
+        if (conn == null) return false;
+        String sql = "INSERT INTO Competitors "
+                + "(CompetitorID, FirstName, MiddleName, LastName, Level, Country, "
+                + "Score1, Score2, Score3, Score4, Score5) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, competitorId);
+            pstmt.setString(2, competitorName.getFirstName());
+            pstmt.setString(3, competitorName.getMiddleName());
+            pstmt.setString(4, competitorName.getLastName());
+            pstmt.setString(5, level);
+            pstmt.setString(6, country);
+            for (int i = 0; i < 5; i++) {
+                pstmt.setInt(7 + i, scores[i]);
+            }
+            pstmt.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Error saving competitor to database: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Updates this competitor's data in the MySQL database.
+     * @param conn an active JDBC Connection to CompetitionDB
+     * @return true if the update was successful, false otherwise
+     */
+    public boolean updateInDatabase(Connection conn) {
+        if (conn == null) return false;
+        String sql = "UPDATE Competitors SET FirstName=?, MiddleName=?, LastName=?, "
+                + "Level=?, Country=?, Score1=?, Score2=?, Score3=?, Score4=?, Score5=? "
+                + "WHERE CompetitorID=?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, competitorName.getFirstName());
+            pstmt.setString(2, competitorName.getMiddleName());
+            pstmt.setString(3, competitorName.getLastName());
+            pstmt.setString(4, level);
+            pstmt.setString(5, country);
+            for (int i = 0; i < 5; i++) {
+                pstmt.setInt(6 + i, scores[i]);
+            }
+            pstmt.setInt(11, competitorId);
+            int rows = pstmt.executeUpdate();
+            return rows > 0;
+        } catch (SQLException e) {
+            System.err.println("Error updating competitor in database: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Deletes this competitor from the MySQL database.
+     * @param conn an active JDBC Connection to CompetitionDB
+     * @return true if the deletion was successful, false otherwise
+     */
+    public boolean deleteFromDatabase(Connection conn) {
+        if (conn == null) return false;
+        String sql = "DELETE FROM Competitors WHERE CompetitorID = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, competitorId);
+            int rows = pstmt.executeUpdate();
+            return rows > 0;
+        } catch (SQLException e) {
+            System.err.println("Error deleting competitor from database: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Reads a single competitor from the MySQL database by ID.
+     * @param conn an active JDBC Connection to CompetitionDB
+     * @param id the CompetitorID to look up
+     * @return the HACompetitor object, or null if not found
+     */
+    public static HACompetitor readFromDatabase(Connection conn, int id) {
+        if (conn == null) return null;
+        String sql = "SELECT * FROM Competitors WHERE CompetitorID = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return fromResultSet(rs);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error reading competitor from database: " + e.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Reads all competitors from the MySQL database.
+     * @param conn an active JDBC Connection to CompetitionDB
+     * @return a list of all HACompetitor objects in the database
+     */
+    public static List<HACompetitor> readAllFromDatabase(Connection conn) {
+        List<HACompetitor> list = new ArrayList<>();
+        if (conn == null) return list;
+        String sql = "SELECT * FROM Competitors ORDER BY CompetitorID";
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                list.add(fromResultSet(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error reading competitors from database: " + e.getMessage());
+        }
+        return list;
+    }
+
+    /**
+     * Helper method to create an HACompetitor from a database ResultSet row.
+     * @param rs the ResultSet positioned at a valid row
+     * @return an HACompetitor populated from the row data
+     */
+    private static HACompetitor fromResultSet(ResultSet rs) throws SQLException {
+        int id = rs.getInt("CompetitorID");
+        String firstName = rs.getString("FirstName");
+        String middleName = rs.getString("MiddleName");
+        String lastName = rs.getString("LastName");
+        String lvl = rs.getString("Level");
+        String ctry = rs.getString("Country");
+        int[] sc = new int[5];
+        for (int i = 0; i < 5; i++) {
+            sc[i] = rs.getInt("Score" + (i + 1));
+        }
+        Name name;
+        if (middleName != null && !middleName.isEmpty()) {
+            name = new Name(firstName, middleName, lastName);
+        } else {
+            name = new Name(firstName, lastName);
+        }
+        return new HACompetitor(id, name, lvl, ctry, sc);
     }
 }

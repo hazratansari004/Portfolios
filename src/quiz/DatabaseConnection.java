@@ -125,73 +125,34 @@ public class DatabaseConnection {
 
     /**
      * Inserts a competitor into the database.
+     * Delegates to HACompetitor.saveToDatabase().
      * @param c the competitor to insert
      * @return true if insertion was successful
      */
     public boolean insertCompetitor(HACompetitor c) {
         if (!isConnected()) return false;
-        String sql = "INSERT INTO Competitors "
-                + "(CompetitorID, FirstName, MiddleName, LastName, Level, Country, "
-                + "Score1, Score2, Score3, Score4, Score5) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setInt(1, c.getCompetitorId());
-            pstmt.setString(2, c.getCompetitorName().getFirstName());
-            pstmt.setString(3, c.getCompetitorName().getMiddleName());
-            pstmt.setString(4, c.getCompetitorName().getLastName());
-            pstmt.setString(5, c.getLevel());
-            pstmt.setString(6, c.getCountry());
-            int[] scores = c.getScoreArray();
-            for (int i = 0; i < 5; i++) {
-                pstmt.setInt(7 + i, scores[i]);
-            }
-            pstmt.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            System.err.println("Error inserting competitor: " + e.getMessage());
-            return false;
-        }
+        return c.saveToDatabase(connection);
     }
 
     /**
      * Retrieves all competitors from the database.
+     * Delegates to HACompetitor.readAllFromDatabase().
      * @return list of HACompetitor objects
      */
     public List<HACompetitor> getAllCompetitors() {
-        List<HACompetitor> list = new ArrayList<>();
-        if (!isConnected()) return list;
-        String sql = "SELECT * FROM Competitors ORDER BY CompetitorID";
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                HACompetitor c = resultSetToCompetitor(rs);
-                list.add(c);
-            }
-        } catch (SQLException e) {
-            System.err.println("Error retrieving competitors: " + e.getMessage());
-        }
-        return list;
+        if (!isConnected()) return new ArrayList<>();
+        return HACompetitor.readAllFromDatabase(connection);
     }
 
     /**
      * Retrieves a single competitor by ID from the database.
+     * Delegates to HACompetitor.readFromDatabase().
      * @param id the competitor ID
      * @return HACompetitor object, or null if not found
      */
     public HACompetitor getCompetitorById(int id) {
         if (!isConnected()) return null;
-        String sql = "SELECT * FROM Competitors WHERE CompetitorID = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setInt(1, id);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                if (rs.next()) {
-                    return resultSetToCompetitor(rs);
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error retrieving competitor: " + e.getMessage());
-        }
-        return null;
+        return HACompetitor.readFromDatabase(connection, id);
     }
 
     /**
@@ -201,44 +162,20 @@ public class DatabaseConnection {
      */
     public boolean deleteCompetitor(int id) {
         if (!isConnected()) return false;
-        String sql = "DELETE FROM Competitors WHERE CompetitorID = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setInt(1, id);
-            int rows = pstmt.executeUpdate();
-            return rows > 0;
-        } catch (SQLException e) {
-            System.err.println("Error deleting competitor: " + e.getMessage());
-            return false;
-        }
+        // Create a temporary competitor to use its deleteFromDatabase method
+        HACompetitor temp = new HACompetitor(id, new Name("", ""), "");
+        return temp.deleteFromDatabase(connection);
     }
 
     /**
      * Updates an existing competitor in the database.
+     * Delegates to HACompetitor.updateInDatabase().
      * @param c the competitor with updated data
      * @return true if update was successful
      */
     public boolean updateCompetitor(HACompetitor c) {
         if (!isConnected()) return false;
-        String sql = "UPDATE Competitors SET FirstName=?, MiddleName=?, LastName=?, "
-                + "Level=?, Country=?, Score1=?, Score2=?, Score3=?, Score4=?, Score5=? "
-                + "WHERE CompetitorID=?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, c.getCompetitorName().getFirstName());
-            pstmt.setString(2, c.getCompetitorName().getMiddleName());
-            pstmt.setString(3, c.getCompetitorName().getLastName());
-            pstmt.setString(4, c.getLevel());
-            pstmt.setString(5, c.getCountry());
-            int[] scores = c.getScoreArray();
-            for (int i = 0; i < 5; i++) {
-                pstmt.setInt(6 + i, scores[i]);
-            }
-            pstmt.setInt(11, c.getCompetitorId());
-            int rows = pstmt.executeUpdate();
-            return rows > 0;
-        } catch (SQLException e) {
-            System.err.println("Error updating competitor: " + e.getMessage());
-            return false;
-        }
+        return c.updateInDatabase(connection);
     }
 
     /**
@@ -252,29 +189,5 @@ public class DatabaseConnection {
                 System.err.println("Error closing connection: " + e.getMessage());
             }
         }
-    }
-
-    /**
-     * Converts a ResultSet row to an HACompetitor object.
-     */
-    private HACompetitor resultSetToCompetitor(ResultSet rs) throws SQLException {
-        int id = rs.getInt("CompetitorID");
-        String firstName = rs.getString("FirstName");
-        String middleName = rs.getString("MiddleName");
-        String lastName = rs.getString("LastName");
-        String level = rs.getString("Level");
-        String country = rs.getString("Country");
-        int[] scores = new int[5];
-        for (int i = 0; i < 5; i++) {
-            scores[i] = rs.getInt("Score" + (i + 1));
-        }
-
-        Name name;
-        if (middleName != null && !middleName.isEmpty()) {
-            name = new Name(firstName, middleName, lastName);
-        } else {
-            name = new Name(firstName, lastName);
-        }
-        return new HACompetitor(id, name, level, country, scores);
     }
 }
