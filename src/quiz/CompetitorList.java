@@ -7,14 +7,29 @@ import java.util.Map;
 
 /**
  * Manages a list of competitors and provides summary/statistics methods.
- * Supports optional MySQL database integration via DatabaseConnection.
- * When a database is connected, competitors are persisted automatically.
+ * <p>
+ * This class maintains an in-memory list of {@link HACompetitor} instances
+ * and optionally integrates with a MySQL-backed {@link DatabaseConnection}.
+ * When a database connection is initialized via {@link #initDatabase()},
+ * competitors are loaded from the database and subsequently persisted when
+ * new competitors are added or removed.
+ * </p>
+ *
+ * @author HA
+ * @since 1.0
+ * @see HACompetitor
+ * @see DatabaseConnection
  */
 public class CompetitorList {
     private List<HACompetitor> competitors;
     private DatabaseConnection dbConnection;
     private boolean dbConnected;
 
+    /**
+     * Creates an empty CompetitorList with no active database connection.
+     *
+     * @since 1.0
+     */
     public CompetitorList() {
         competitors = new ArrayList<>();
         dbConnection = null;
@@ -22,8 +37,20 @@ public class CompetitorList {
     }
 
     /**
-     * Initializes database connection and loads existing competitors.
-     * @return true if database connection and setup were successful
+     * Initializes the database connection and loads existing competitors from
+     * the persistent store into memory.
+     * <p>
+     * This method will attempt to connect to the database, create the
+     * required table (if necessary) and then load the persisted competitors
+     * into the internal list. If any step fails the connection will be
+     * closed and this method will return {@code false}.
+     * </p>
+     *
+     * @return {@code true} if the database connection was established, the
+     *         table was created or already existed, and competitors were
+     *         loaded; {@code false} otherwise.
+     * @since 1.0
+     * @see #loadFromDatabase()
      */
     public boolean initDatabase() {
         dbConnection = new DatabaseConnection();
@@ -39,7 +66,15 @@ public class CompetitorList {
         return false;
     }
 
-    /** Loads all competitors from the database into the in-memory list. */
+    /**
+     * Loads all competitors from the database into the in-memory list.
+     * <p>
+     * This helper is private because callers should use {@link #refreshFromDatabase}
+     * when reloading is required from outside this class.
+     * </p>
+     *
+     * @since 1.0
+     */
     private void loadFromDatabase() {
         if (dbConnected) {
             List<HACompetitor> dbCompetitors = dbConnection.getAllCompetitors();
@@ -48,16 +83,40 @@ public class CompetitorList {
         }
     }
 
-    /** Refreshes the in-memory list from the database. */
+    /**
+     * Refreshes the internal in-memory list of competitors from the database.
+     * <p>
+     * This is a public wrapper around the private {@link #loadFromDatabase()}
+     * method to allow external callers to request a refresh when a database
+     * connection is active.
+     * </p>
+     *
+     * @since 1.0
+     */
     public void refreshFromDatabase() {
         loadFromDatabase();
     }
 
-    /** Returns whether the database is connected. */
+    /**
+     * Returns whether this {@code CompetitorList} currently has an active
+     * database connection.
+     *
+     * @return {@code true} if connected to the database; {@code false}
+     *         otherwise.
+     * @since 1.0
+     */
     public boolean isDatabaseConnected() {
         return dbConnected;
     }
 
+    /**
+     * Adds a competitor to the in-memory list and persists it to the
+     * database if a connection is active.
+     *
+     * @param c the competitor to add; must not be {@code null}
+     * @since 1.0
+     * @see DatabaseConnection#insertCompetitor(HACompetitor)
+     */
     public void addCompetitor(HACompetitor c) {
         if (dbConnected) {
             dbConnection.insertCompetitor(c);
@@ -65,10 +124,30 @@ public class CompetitorList {
         competitors.add(c);
     }
 
+    /**
+     * Returns the internal list of competitors.
+     * <p>
+     * The returned list is a live, modifiable reference to the internal
+     * storage. Mutating this list will affect the state of this
+     * {@code CompetitorList} instance.
+     * </p>
+     *
+     * @return a {@link List} containing all {@link HACompetitor} instances
+     *         currently managed by this object.
+     * @since 1.0
+     */
     public List<HACompetitor> getCompetitors() {
         return competitors;
     }
 
+    /**
+     * Looks up a competitor by their numeric identifier.
+     *
+     * @param id the competitor id to search for
+     * @return the {@link HACompetitor} with the matching id, or {@code null}
+     *         if no such competitor exists.
+     * @since 1.0
+     */
     public HACompetitor getCompetitorById(int id) {
         for (HACompetitor c : competitors) {
             if (c.getCompetitorId() == id) {
@@ -78,7 +157,18 @@ public class CompetitorList {
         return null;
     }
 
-    /** Removes a competitor by their ID. Returns true if removed. */
+    /**
+     * Removes a competitor by their id.
+     * <p>
+     * If the database is connected, the competitor is also deleted from the
+     * persistent store.
+     * </p>
+     *
+     * @param id the id of the competitor to remove
+     * @return {@code true} if a competitor with the given id was found and
+     *         removed; {@code false} otherwise.
+     * @since 1.0
+     */
     public boolean removeCompetitorById(int id) {
         for (int i = 0; i < competitors.size(); i++) {
             if (competitors.get(i).getCompetitorId() == id) {
@@ -92,7 +182,13 @@ public class CompetitorList {
         return false;
     }
 
-    /** Returns the competitor with the highest overall score. */
+    /**
+     * Returns the competitor with the highest overall score.
+     *
+     * @return the top-performing {@link HACompetitor}, or {@code null} if the
+     *         list is empty.
+     * @since 1.0
+     */
     public HACompetitor getTopPerformer() {
         HACompetitor top = null;
         double best = -1;
@@ -105,12 +201,24 @@ public class CompetitorList {
         return top;
     }
 
-    /** Returns total number of competitors. */
+    /**
+     * Returns the total number of competitors currently managed.
+     *
+     * @return the number of competitors.
+     * @since 1.0
+     */
     public int getTotalCompetitors() {
         return competitors.size();
     }
 
-    /** Returns a frequency map of all individual scores. */
+    /**
+     * Builds a frequency map of all individual scores across all competitors.
+     *
+     * @return a {@link Map} where the keys are individual scores (for
+     *         example 0-5) and values are the number of occurrences of that
+     *         score across all competitors.
+     * @since 1.0
+     */
     public Map<Integer, Integer> getScoreFrequency() {
         Map<Integer, Integer> freq = new HashMap<>();
         for (HACompetitor c : competitors) {
@@ -121,7 +229,13 @@ public class CompetitorList {
         return freq;
     }
 
-    /** Generates a full text report of all competitors. */
+    /**
+     * Generates a full text report of all competitors including a table of
+     * competitors with details, the top performer, and statistical summaries.
+     *
+     * @return a formatted {@link String} containing the complete report.
+     * @since 1.0
+     */
     public String generateReport() {
         StringBuilder sb = new StringBuilder();
 
@@ -176,7 +290,13 @@ public class CompetitorList {
         return sb.toString();
     }
 
-    /** Generates the next available competitor ID. */
+    /**
+     * Generates the next available competitor ID by finding the current
+     * maximum ID and adding one. IDs start from 200.
+     *
+     * @return the next available competitor id.
+     * @since 1.0
+     */
     public int getNextId() {
         int maxId = 199;
         for (HACompetitor c : competitors) {
@@ -187,7 +307,11 @@ public class CompetitorList {
         return maxId + 1;
     }
 
-    /** Closes the database connection if open. */
+    /**
+     * Closes the database connection if one is currently open.
+     *
+     * @since 1.0
+     */
     public void closeDatabase() {
         if (dbConnection != null) {
             dbConnection.closeConnection();
