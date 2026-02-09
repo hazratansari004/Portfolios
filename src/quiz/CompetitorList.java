@@ -230,10 +230,11 @@ public class CompetitorList {
     }
 
     /**
-     * Generates a full text report of all competitors including a table of
-     * competitors with details, the top performer, and statistical summaries.
+     * Generates a human-readable text report of all competitors and
+     * statistical summaries.
      *
-     * @return a formatted {@link String} containing the complete report.
+     * @return a multi-line {@link String} containing the competitor table,
+     *         top performer summary and statistical information.
      * @since 1.0
      */
     public String generateReport() {
@@ -291,10 +292,14 @@ public class CompetitorList {
     }
 
     /**
-     * Generates the next available competitor ID by finding the current
-     * maximum ID and adding one. IDs start from 200.
+     * Generates the next available competitor ID.
+     * <p>
+     * The method scans existing competitor ids and returns one greater than
+     * the current maximum. The initial base is 199, so the first generated
+     * id when the list is empty will be 200.
+     * </p>
      *
-     * @return the next available competitor id.
+     * @return the next numeric competitor id to use.
      * @since 1.0
      */
     public int getNextId() {
@@ -308,7 +313,10 @@ public class CompetitorList {
     }
 
     /**
-     * Closes the database connection if one is currently open.
+     * Closes the currently open database connection, if any.
+     * <p>
+     * This method is safe to call even if no connection exists.
+     * </p>
      *
      * @since 1.0
      */
