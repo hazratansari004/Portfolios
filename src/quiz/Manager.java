@@ -13,6 +13,8 @@ import java.util.TreeMap;
 
 /**
  * Main Quiz Application with Java Swing GUI.
+ *
+ * @author Sailesh Kumar Mandal
  * Acts as both the quiz runner and competition manager.
  * 25 questions across 5 levels, each question worth 4%.
  * Scores are recorded per level (Score1-Score5), and results are
@@ -35,7 +37,7 @@ public class Manager extends JFrame {
     private JButton btnNext;
 
     // Quiz state
-    private HACompetitor currentCompetitor;
+    private SKMCompetitor currentCompetitor;
     private int currentLevel;
     private int currentQuestionInLevel;
     private int levelCorrect;
@@ -480,7 +482,7 @@ public class Manager extends JFrame {
             name = new Name(firstName, middleName, lastName);
         }
         int id = competitorList.getNextId();
-        currentCompetitor = new HACompetitor(id, name, selectedLevel, country);
+        currentCompetitor = new SKMCompetitor(id, name, selectedLevel, country);
         currentLevel = 1;
         currentQuestionInLevel = 0;
         levelCorrect = 0;
@@ -708,7 +710,7 @@ public class Manager extends JFrame {
             public boolean isCellEditable(int row, int col) { return false; }
         };
 
-        for (HACompetitor c : competitorList.getCompetitors()) {
+        for (SKMCompetitor c : competitorList.getCompetitors()) {
             int[] scores = c.getScoreArray();
             model.addRow(new Object[]{
                 c.getCompetitorId(),
@@ -757,7 +759,7 @@ public class Manager extends JFrame {
             if (input == null || input.trim().isEmpty()) return;
             try {
                 int id = Integer.parseInt(input.trim());
-                HACompetitor found = competitorList.getCompetitorById(id);
+                SKMCompetitor found = competitorList.getCompetitorById(id);
                 if (found != null) {
                     StringBuilder sb = new StringBuilder();
                     sb.append("Full Details:\n");
@@ -893,7 +895,7 @@ public class Manager extends JFrame {
             public boolean isCellEditable(int row, int col) { return false; }
         };
 
-        for (HACompetitor c : competitorList.getCompetitors()) {
+        for (SKMCompetitor c : competitorList.getCompetitors()) {
             int[] scores = c.getScoreArray();
             model.addRow(new Object[]{
                 c.getCompetitorId(),
@@ -929,7 +931,7 @@ public class Manager extends JFrame {
         panel.setBackground(BG_WHITE);
         panel.setBorder(new EmptyBorder(25, 25, 25, 25));
 
-        HACompetitor top = competitorList.getTopPerformer();
+        SKMCompetitor top = competitorList.getTopPerformer();
         if (top != null) {
             JLabel lblTitle = new JLabel("Top Performer");
             lblTitle.setFont(new Font("Arial", Font.BOLD, 22));
@@ -973,7 +975,7 @@ public class Manager extends JFrame {
         StringBuilder sb = new StringBuilder();
         sb.append("Total number of competitors: ").append(competitorList.getTotalCompetitors()).append("\n\n");
 
-        HACompetitor top = competitorList.getTopPerformer();
+        SKMCompetitor top = competitorList.getTopPerformer();
         if (top != null) {
             sb.append("Competitor with the highest score: ")
               .append(top.getCompetitorName().getFullName())
@@ -1060,7 +1062,7 @@ public class Manager extends JFrame {
             // Try search by ID
             try {
                 int id = Integer.parseInt(query);
-                HACompetitor c = competitorList.getCompetitorById(id);
+                SKMCompetitor c = competitorList.getCompetitorById(id);
                 if (c != null) {
                     result.append("=== Search Result for ID ").append(id).append(" ===\n\n");
                     result.append("Full Details:\n");
@@ -1076,7 +1078,7 @@ public class Manager extends JFrame {
             // Search by name (partial match)
             if (!found) {
                 String lowerQuery = query.toLowerCase();
-                for (HACompetitor c : competitorList.getCompetitors()) {
+                for (SKMCompetitor c : competitorList.getCompetitors()) {
                     if (c.getCompetitorName().getFullName().toLowerCase().contains(lowerQuery)) {
                         if (!found) {
                             result.append("=== Search Results ===\n\n");

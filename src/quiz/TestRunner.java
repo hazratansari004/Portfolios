@@ -2,7 +2,9 @@ package quiz;
 
 /**
  * Simple test class to validate core functionality of the quiz application.
- * Tests Name, HACompetitor, CompetitorList, and QuizData classes.
+ * Tests Name, SKMCompetitor, CompetitorList, and QuizData classes.
+ *
+ * @author Sailesh Kumar Mandal
  */
 public class TestRunner {
 
@@ -23,7 +25,7 @@ public class TestRunner {
         System.out.println("=== Name Class Tests ===");
         testNameClass();
 
-        System.out.println("\n=== HACompetitor Class Tests ===");
+        System.out.println("\n=== SKMCompetitor Class Tests ===");
         testCompetitorClass();
 
         System.out.println("\n=== CompetitorList Class Tests ===");
@@ -53,14 +55,14 @@ public class TestRunner {
 
     private static void testCompetitorClass() {
         Name name = new Name("Alice", "Green");
-        HACompetitor c = new HACompetitor(200, name, "Beginner");
+        SKMCompetitor c = new SKMCompetitor(200, name, "Beginner");
         test("getCompetitorId", c.getCompetitorId() == 200);
         test("getLevel", c.getLevel().equals("Beginner"));
         test("getName", c.getCompetitorName().getFullName().equals("Alice Green"));
         test("getCountry default", c.getCountry().equals(""));
 
         // Test with country
-        HACompetitor cWithCountry = new HACompetitor(210, name, "Advanced", "Nepal");
+        SKMCompetitor cWithCountry = new SKMCompetitor(210, name, "Advanced", "Nepal");
         test("getCountry", cWithCountry.getCountry().equals("Nepal"));
         cWithCountry.setCountry("UK");
         test("setCountry", cWithCountry.getCountry().equals("UK"));
@@ -83,7 +85,7 @@ public class TestRunner {
         test("getFullDetails contains score", full.contains("3.6"));
 
         // Full details with country
-        HACompetitor cFull = new HACompetitor(205, new Name("Bob", "Smith"), "Intermediate", "Nepal", new int[]{3, 4, 3, 4, 3});
+        SKMCompetitor cFull = new SKMCompetitor(205, new Name("Bob", "Smith"), "Intermediate", "Nepal", new int[]{3, 4, 3, 4, 3});
         String fullWithCountry = cFull.getFullDetails();
         test("getFullDetails contains country", fullWithCountry.contains("Nepal"));
 
@@ -104,7 +106,7 @@ public class TestRunner {
         test("setLevel", c.getLevel().equals("Advanced"));
 
         // Test zero score is included in average
-        HACompetitor cZero = new HACompetitor(300, new Name("Test", "User"), "Beginner",
+        SKMCompetitor cZero = new SKMCompetitor(300, new Name("Test", "User"), "Beginner",
                 new int[]{0, 4, 4, 4, 4});
         // Average of 0,4,4,4,4 = 16/5 = 3.2
         test("getOverallScore with zero", cZero.getOverallScore() == 3.2);
@@ -115,11 +117,11 @@ public class TestRunner {
         test("empty list size", list.getTotalCompetitors() == 0);
         test("getNextId initial", list.getNextId() == 200);
 
-        HACompetitor c1 = new HACompetitor(200, new Name("Alice", "Green"), "Beginner",
+        SKMCompetitor c1 = new SKMCompetitor(200, new Name("Alice", "Green"), "Beginner",
                 new int[]{4, 3, 5, 2, 4});
-        HACompetitor c2 = new HACompetitor(201, new Name("Bob", "Brown"), "Intermediate",
+        SKMCompetitor c2 = new SKMCompetitor(201, new Name("Bob", "Brown"), "Intermediate",
                 new int[]{3, 4, 4, 5, 4});
-        HACompetitor c3 = new HACompetitor(202, new Name("Carol", "White"), "Advanced",
+        SKMCompetitor c3 = new SKMCompetitor(202, new Name("Carol", "White"), "Advanced",
                 new int[]{5, 5, 4, 4, 5});
 
         list.addCompetitor(c1);
@@ -132,7 +134,7 @@ public class TestRunner {
         test("getNextId after adds", list.getNextId() == 203);
 
         // Top performer should be Carol (4.6)
-        HACompetitor top = list.getTopPerformer();
+        SKMCompetitor top = list.getTopPerformer();
         test("getTopPerformer", top == c3);
         test("top performer score", top.getOverallScore() == 4.6);
 

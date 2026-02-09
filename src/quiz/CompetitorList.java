@@ -8,20 +8,20 @@ import java.util.Map;
 /**
  * Manages a list of competitors and provides summary/statistics methods.
  * <p>
- * This class maintains an in-memory list of {@link HACompetitor} instances
+ * This class maintains an in-memory list of {@link SKMCompetitor} instances
  * and optionally integrates with a MySQL-backed {@link DatabaseConnection}.
  * When a database connection is initialized via {@link #initDatabase()},
  * competitors are loaded from the database and subsequently persisted when
  * new competitors are added or removed.
  * </p>
  *
- * @author HA
+ * @author Sailesh Kumar Mandal
  * @since 1.0
- * @see HACompetitor
+ * @see SKMCompetitor
  * @see DatabaseConnection
  */
 public class CompetitorList {
-    private List<HACompetitor> competitors;
+    private List<SKMCompetitor> competitors;
     private DatabaseConnection dbConnection;
     private boolean dbConnected;
 
@@ -77,7 +77,7 @@ public class CompetitorList {
      */
     private void loadFromDatabase() {
         if (dbConnected) {
-            List<HACompetitor> dbCompetitors = dbConnection.getAllCompetitors();
+            List<SKMCompetitor> dbCompetitors = dbConnection.getAllCompetitors();
             competitors.clear();
             competitors.addAll(dbCompetitors);
         }
@@ -115,9 +115,9 @@ public class CompetitorList {
      *
      * @param c the competitor to add; must not be {@code null}
      * @since 1.0
-     * @see DatabaseConnection#insertCompetitor(HACompetitor)
+     * @see DatabaseConnection#insertCompetitor(SKMCompetitor)
      */
-    public void addCompetitor(HACompetitor c) {
+    public void addCompetitor(SKMCompetitor c) {
         if (dbConnected) {
             dbConnection.insertCompetitor(c);
         }
@@ -132,11 +132,11 @@ public class CompetitorList {
      * {@code CompetitorList} instance.
      * </p>
      *
-     * @return a {@link List} containing all {@link HACompetitor} instances
+     * @return a {@link List} containing all {@link SKMCompetitor} instances
      *         currently managed by this object.
      * @since 1.0
      */
-    public List<HACompetitor> getCompetitors() {
+    public List<SKMCompetitor> getCompetitors() {
         return competitors;
     }
 
@@ -144,12 +144,12 @@ public class CompetitorList {
      * Looks up a competitor by their numeric identifier.
      *
      * @param id the competitor id to search for
-     * @return the {@link HACompetitor} with the matching id, or {@code null}
+     * @return the {@link SKMCompetitor} with the matching id, or {@code null}
      *         if no such competitor exists.
      * @since 1.0
      */
-    public HACompetitor getCompetitorById(int id) {
-        for (HACompetitor c : competitors) {
+    public SKMCompetitor getCompetitorById(int id) {
+        for (SKMCompetitor c : competitors) {
             if (c.getCompetitorId() == id) {
                 return c;
             }
@@ -185,14 +185,14 @@ public class CompetitorList {
     /**
      * Returns the competitor with the highest overall score.
      *
-     * @return the top-performing {@link HACompetitor}, or {@code null} if the
+     * @return the top-performing {@link SKMCompetitor}, or {@code null} if the
      *         list is empty.
      * @since 1.0
      */
-    public HACompetitor getTopPerformer() {
-        HACompetitor top = null;
+    public SKMCompetitor getTopPerformer() {
+        SKMCompetitor top = null;
         double best = -1;
-        for (HACompetitor c : competitors) {
+        for (SKMCompetitor c : competitors) {
             if (c.getOverallScore() > best) {
                 best = c.getOverallScore();
                 top = c;
@@ -221,7 +221,7 @@ public class CompetitorList {
      */
     public Map<Integer, Integer> getScoreFrequency() {
         Map<Integer, Integer> freq = new HashMap<>();
-        for (HACompetitor c : competitors) {
+        for (SKMCompetitor c : competitors) {
             for (int s : c.getScoreArray()) {
                 freq.put(s, freq.getOrDefault(s, 0) + 1);
             }
@@ -244,7 +244,7 @@ public class CompetitorList {
                 "Competitor ID", "Name", "Level", "Country", "Scores", "Overall"));
         sb.append("=".repeat(92)).append("\n");
 
-        for (HACompetitor c : competitors) {
+        for (SKMCompetitor c : competitors) {
             sb.append(String.format("%-15d %-20s %-15s %-12s %-20s %-10.1f%n",
                     c.getCompetitorId(),
                     c.getCompetitorName().getFullName(),
@@ -255,7 +255,7 @@ public class CompetitorList {
         }
 
         // Top performer
-        HACompetitor top = getTopPerformer();
+        SKMCompetitor top = getTopPerformer();
         if (top != null) {
             sb.append("\nTop Performer:\n");
             sb.append(top.getFullDetails()).append("\n");
@@ -299,7 +299,7 @@ public class CompetitorList {
      */
     public int getNextId() {
         int maxId = 199;
-        for (HACompetitor c : competitors) {
+        for (SKMCompetitor c : competitors) {
             if (c.getCompetitorId() > maxId) {
                 maxId = c.getCompetitorId();
             }

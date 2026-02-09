@@ -6,6 +6,8 @@ import java.util.List;
 
 /**
  * Handles MySQL database connection and CRUD operations for competitors.
+ *
+ * @author Sailesh Kumar Mandal
  * Database: CompetitionDB
  * Table: Competitors (CompetitorID, FirstName, MiddleName, LastName, Level, Country,
  *                      Score1, Score2, Score3, Score4, Score5)
@@ -125,34 +127,34 @@ public class DatabaseConnection {
 
     /**
      * Inserts a competitor into the database.
-     * Delegates to HACompetitor.saveToDatabase().
+     * Delegates to SKMCompetitor.saveToDatabase().
      * @param c the competitor to insert
      * @return true if insertion was successful
      */
-    public boolean insertCompetitor(HACompetitor c) {
+    public boolean insertCompetitor(SKMCompetitor c) {
         if (!isConnected()) return false;
         return c.saveToDatabase(connection);
     }
 
     /**
      * Retrieves all competitors from the database.
-     * Delegates to HACompetitor.readAllFromDatabase().
-     * @return list of HACompetitor objects
+     * Delegates to SKMCompetitor.readAllFromDatabase().
+     * @return list of SKMCompetitor objects
      */
-    public List<HACompetitor> getAllCompetitors() {
+    public List<SKMCompetitor> getAllCompetitors() {
         if (!isConnected()) return new ArrayList<>();
-        return HACompetitor.readAllFromDatabase(connection);
+        return SKMCompetitor.readAllFromDatabase(connection);
     }
 
     /**
      * Retrieves a single competitor by ID from the database.
-     * Delegates to HACompetitor.readFromDatabase().
+     * Delegates to SKMCompetitor.readFromDatabase().
      * @param id the competitor ID
-     * @return HACompetitor object, or null if not found
+     * @return SKMCompetitor object, or null if not found
      */
-    public HACompetitor getCompetitorById(int id) {
+    public SKMCompetitor getCompetitorById(int id) {
         if (!isConnected()) return null;
-        return HACompetitor.readFromDatabase(connection, id);
+        return SKMCompetitor.readFromDatabase(connection, id);
     }
 
     /**
@@ -163,17 +165,17 @@ public class DatabaseConnection {
     public boolean deleteCompetitor(int id) {
         if (!isConnected()) return false;
         // Create a temporary competitor to use its deleteFromDatabase method
-        HACompetitor temp = new HACompetitor(id, new Name("", ""), "");
+        SKMCompetitor temp = new SKMCompetitor(id, new Name("", ""), "");
         return temp.deleteFromDatabase(connection);
     }
 
     /**
      * Updates an existing competitor in the database.
-     * Delegates to HACompetitor.updateInDatabase().
+     * Delegates to SKMCompetitor.updateInDatabase().
      * @param c the competitor with updated data
      * @return true if update was successful
      */
-    public boolean updateCompetitor(HACompetitor c) {
+    public boolean updateCompetitor(SKMCompetitor c) {
         if (!isConnected()) return false;
         return c.updateInDatabase(connection);
     }

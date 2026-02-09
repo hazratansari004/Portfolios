@@ -8,15 +8,17 @@ import java.util.List;
  * Represents a competitor in the quiz competition.
  * Stores competitor details including ID, name, level, country, and scores.
  * Includes methods to read from and write to the MySQL database using JDBC.
+ *
+ * @author Sailesh Kumar Mandal
  */
-public class HACompetitor {
+public class SKMCompetitor {
     private int competitorId;
     private Name competitorName;
     private String level;       // Beginner, Intermediate, Advanced
     private String country;     // Extra attribute
     private int[] scores;       // Array of 5 scores (one per level)
 
-    public HACompetitor(int competitorId, Name competitorName, String level) {
+    public SKMCompetitor(int competitorId, Name competitorName, String level) {
         this.competitorId = competitorId;
         this.competitorName = competitorName;
         this.level = level;
@@ -24,7 +26,7 @@ public class HACompetitor {
         this.scores = new int[5];
     }
 
-    public HACompetitor(int competitorId, Name competitorName, String level, int[] scores) {
+    public SKMCompetitor(int competitorId, Name competitorName, String level, int[] scores) {
         this.competitorId = competitorId;
         this.competitorName = competitorName;
         this.level = level;
@@ -32,7 +34,7 @@ public class HACompetitor {
         setScores(scores);
     }
 
-    public HACompetitor(int competitorId, Name competitorName, String level, String country) {
+    public SKMCompetitor(int competitorId, Name competitorName, String level, String country) {
         this.competitorId = competitorId;
         this.competitorName = competitorName;
         this.level = level;
@@ -40,7 +42,7 @@ public class HACompetitor {
         this.scores = new int[5];
     }
 
-    public HACompetitor(int competitorId, Name competitorName, String level, String country, int[] scores) {
+    public SKMCompetitor(int competitorId, Name competitorName, String level, String country, int[] scores) {
         this.competitorId = competitorId;
         this.competitorName = competitorName;
         this.level = level;
@@ -230,9 +232,9 @@ public class HACompetitor {
      * Reads a single competitor from the MySQL database by ID.
      * @param conn an active JDBC Connection to CompetitionDB
      * @param id the CompetitorID to look up
-     * @return the HACompetitor object, or null if not found
+     * @return the SKMCompetitor object, or null if not found
      */
-    public static HACompetitor readFromDatabase(Connection conn, int id) {
+    public static SKMCompetitor readFromDatabase(Connection conn, int id) {
         if (conn == null) return null;
         String sql = "SELECT * FROM Competitors WHERE CompetitorID = ?";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -251,10 +253,10 @@ public class HACompetitor {
     /**
      * Reads all competitors from the MySQL database.
      * @param conn an active JDBC Connection to CompetitionDB
-     * @return a list of all HACompetitor objects in the database
+     * @return a list of all SKMCompetitor objects in the database
      */
-    public static List<HACompetitor> readAllFromDatabase(Connection conn) {
-        List<HACompetitor> list = new ArrayList<>();
+    public static List<SKMCompetitor> readAllFromDatabase(Connection conn) {
+        List<SKMCompetitor> list = new ArrayList<>();
         if (conn == null) return list;
         String sql = "SELECT * FROM Competitors ORDER BY CompetitorID";
         try (Statement stmt = conn.createStatement();
@@ -269,11 +271,11 @@ public class HACompetitor {
     }
 
     /**
-     * Helper method to create an HACompetitor from a database ResultSet row.
+     * Helper method to create an SKMCompetitor from a database ResultSet row.
      * @param rs the ResultSet positioned at a valid row
-     * @return an HACompetitor populated from the row data
+     * @return an SKMCompetitor populated from the row data
      */
-    private static HACompetitor fromResultSet(ResultSet rs) throws SQLException {
+    private static SKMCompetitor fromResultSet(ResultSet rs) throws SQLException {
         int id = rs.getInt("CompetitorID");
         String firstName = rs.getString("FirstName");
         String middleName = rs.getString("MiddleName");
@@ -290,6 +292,6 @@ public class HACompetitor {
         } else {
             name = new Name(firstName, lastName);
         }
-        return new HACompetitor(id, name, lvl, ctry, sc);
+        return new SKMCompetitor(id, name, lvl, ctry, sc);
     }
 }
