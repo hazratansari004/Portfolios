@@ -5,15 +5,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Provides 25 quiz questions across 5 levels (5 questions per level).
+ * Provides 25 quiz questions across 5 attempts (5 questions per attempt).
  * Topics cover general knowledge, science, geography, technology, and sports.
+ *
+ * @author Sailesh Kumar Mandal
  */
 public class QuizData {
 
     public static List<QuizQuestion> getAllQuestions() {
         List<QuizQuestion> questions = new ArrayList<>();
 
-        // Level 1: Beginner (Questions 1-5)
+        // Attempt 1: Beginner (Questions 1-5)
         questions.add(new QuizQuestion(
             "What is the capital of France?",
             "Berlin", "Madrid", "Paris", "Rome", 2));
@@ -30,7 +32,7 @@ public class QuizData {
             "What gas do plants absorb from the atmosphere?",
             "Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen", 2));
 
-        // Level 2: Elementary (Questions 6-10)
+        // Attempt 2: Elementary (Questions 6-10)
         questions.add(new QuizQuestion(
             "Who painted the Mona Lisa?",
             "Michelangelo", "Leonardo da Vinci", "Raphael", "Donatello", 1));
@@ -47,7 +49,7 @@ public class QuizData {
             "In which year did World War II end?",
             "1943", "1944", "1945", "1946", 2));
 
-        // Level 3: Intermediate (Questions 11-15)
+        // Attempt 3: Intermediate (Questions 11-15)
         questions.add(new QuizQuestion(
             "What is the powerhouse of the cell?",
             "Nucleus", "Ribosome", "Mitochondria", "Golgi Body", 2));
@@ -64,7 +66,7 @@ public class QuizData {
             "What is the largest planet in our solar system?",
             "Saturn", "Neptune", "Jupiter", "Uranus", 2));
 
-        // Level 4: Advanced (Questions 16-20)
+        // Attempt 4: Advanced (Questions 16-20)
         questions.add(new QuizQuestion(
             "What programming language was developed by James Gosling?",
             "Python", "C++", "Java", "Ruby", 2));
@@ -82,7 +84,7 @@ public class QuizData {
             "What is the binary representation of the decimal number 10?",
             "1010", "1100", "1001", "1110", 0));
 
-        // Level 5: Expert (Questions 21-25)
+        // Attempt 5: Expert (Questions 21-25)
         questions.add(new QuizQuestion(
             "Who is known as the father of computer science?",
             "Albert Einstein", "Alan Turing", "Nikola Tesla", "Isaac Newton", 1));
@@ -104,7 +106,7 @@ public class QuizData {
         return questions;
     }
 
-    /** Returns questions for a specific level (1-5). */
+    /** Returns questions for a specific attempt (1-5). */
     public static List<QuizQuestion> getQuestionsForLevel(int level) {
         List<QuizQuestion> all = getAllQuestions();
         int start = (level - 1) * 5;
@@ -112,14 +114,14 @@ public class QuizData {
         return all.subList(start, end);
     }
 
-    /** Returns the level name for a given level number. */
+    /** Returns the attempt name for a given attempt number. */
     public static String getLevelName(int level) {
         switch (level) {
-            case 1: return "Beginner";
-            case 2: return "Elementary";
-            case 3: return "Intermediate";
-            case 4: return "Advanced";
-            case 5: return "Expert";
+            case 1: return "Attempt 1";
+            case 2: return "Attempt 2";
+            case 3: return "Attempt 3";
+            case 4: return "Attempt 4";
+            case 5: return "Attempt 5";
             default: return "Unknown";
         }
     }

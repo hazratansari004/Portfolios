@@ -157,11 +157,11 @@ public class TestRunner {
 
     private static void testQuizData() {
         test("total questions", QuizData.getAllQuestions().size() == 25);
-        test("level 1 questions", QuizData.getQuestionsForLevel(1).size() == 5);
-        test("level 5 questions", QuizData.getQuestionsForLevel(5).size() == 5);
-        test("level name 1", QuizData.getLevelName(1).equals("Beginner"));
-        test("level name 3", QuizData.getLevelName(3).equals("Intermediate"));
-        test("level name 5", QuizData.getLevelName(5).equals("Expert"));
+        test("attempt 1 questions", QuizData.getQuestionsForLevel(1).size() == 5);
+        test("attempt 5 questions", QuizData.getQuestionsForLevel(5).size() == 5);
+        test("attempt name 1", QuizData.getLevelName(1).equals("Attempt 1"));
+        test("attempt name 3", QuizData.getLevelName(3).equals("Attempt 3"));
+        test("attempt name 5", QuizData.getLevelName(5).equals("Attempt 5"));
 
         // Test question structure
         QuizQuestion q = QuizData.getAllQuestions().get(0);
