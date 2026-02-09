@@ -13,8 +13,6 @@ import java.util.TreeMap;
 
 /**
  * Main Quiz Application with Java Swing GUI.
- *
- * @author Sailesh Kumar Mandal
  * Acts as both the quiz runner and competition manager.
  * 25 questions across 5 levels, each question worth 4%.
  * Scores are recorded per level (Score1-Score5), and results are
@@ -73,9 +71,11 @@ public class Manager extends JFrame {
 
         setTitle("Quiz Competition Management");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setSize(900, 650);
+        // Use a modest default size; user can maximize manually
+        setSize(800, 600);
         setLocationRelativeTo(null);
-        setResizable(false);
+        // Allow window to be resized so it can be maximized
+        setResizable(true);
 
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
@@ -85,7 +85,7 @@ public class Manager extends JFrame {
         mainPanel.add(createQuizPanel(), "QUIZ");
         // Level complete and report panels are created dynamically
 
-        add(mainPanel);
+        getContentPane().add(mainPanel);
         cardLayout.show(mainPanel, "WELCOME");
 
         // Close database connection on window close
@@ -113,16 +113,24 @@ public class Manager extends JFrame {
         title.setForeground(TEXT_DARK);
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel subtitle = new JLabel("Test your knowledge across 5 levels!");
+        JLabel subtitle = new JLabel("Test your knowledge across 5 attempts!");
         subtitle.setFont(new Font("Arial", Font.PLAIN, 16));
         subtitle.setForeground(TEXT_SECONDARY);
         subtitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel info = new JLabel("<html><center>25 Questions | 5 Levels | 15 seconds per question<br>"
-                + "Each question is worth 4% of your total score</center></html>");
-        info.setFont(new Font("Arial", Font.PLAIN, 13));
-        info.setForeground(TEXT_SECONDARY);
-        info.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JLabel info = new JLabel(
+        	    "<html><center>" +
+        	    "25 Questions<br>" +
+        	    "5 Attempts<br>" +
+        	    "15 seconds per question<br>" +
+        	    "Each question is worth 4% of your total score" +
+        	    "</center></html>"
+        	);
+
+        	info.setFont(new Font("Arial", Font.PLAIN, 13));
+        	info.setHorizontalAlignment(JLabel.CENTER);
+        	info.setAlignmentX(Component.CENTER_ALIGNMENT);
+
 
         // Separator
         JSeparator sep = new JSeparator();
@@ -187,11 +195,6 @@ public class Manager extends JFrame {
         String dbStatus = competitorList.isDatabaseConnected()
                 ? "Database: Connected (MySQL)"
                 : "Database: Offline (In-Memory)";
-        JLabel lblDb = new JLabel(dbStatus);
-        lblDb.setFont(new Font("Arial", Font.ITALIC, 12));
-        lblDb.setForeground(competitorList.isDatabaseConnected() ? ACCENT_GREEN : TEXT_SECONDARY);
-        lblDb.setAlignmentX(Component.CENTER_ALIGNMENT);
-        center.add(lblDb);
 
         panel.add(center, BorderLayout.CENTER);
         return panel;
@@ -223,6 +226,7 @@ public class Manager extends JFrame {
         form.add(lblFirstName, gbcLblFirstName);
 
         // First Name field
+        // Use explicit JTextField instantiation instead of createStyledTextField
         txtFirstName = new JTextField(20);
         txtFirstName.setFont(new Font("Arial", Font.PLAIN, 15));
         txtFirstName.setBorder(BorderFactory.createCompoundBorder(
@@ -247,6 +251,7 @@ public class Manager extends JFrame {
         form.add(lblMiddleName, gbcLblMiddleName);
 
         // Middle Name field
+        // Use explicit JTextField instantiation instead of createStyledTextField
         txtMiddleName = new JTextField(20);
         txtMiddleName.setFont(new Font("Arial", Font.PLAIN, 15));
         txtMiddleName.setBorder(BorderFactory.createCompoundBorder(
@@ -271,6 +276,7 @@ public class Manager extends JFrame {
         form.add(lblLastName, gbcLblLastName);
 
         // Last Name field
+        // Use explicit JTextField instantiation instead of createStyledTextField
         txtLastName = new JTextField(20);
         txtLastName.setFont(new Font("Arial", Font.PLAIN, 15));
         txtLastName.setBorder(BorderFactory.createCompoundBorder(
@@ -295,6 +301,7 @@ public class Manager extends JFrame {
         form.add(lblCountry, gbcLblCountry);
 
         // Country field
+        // Use explicit JTextField instantiation instead of createStyledTextField
         txtCountry = new JTextField(20);
         txtCountry.setFont(new Font("Arial", Font.PLAIN, 15));
         txtCountry.setBorder(BorderFactory.createCompoundBorder(
@@ -307,7 +314,7 @@ public class Manager extends JFrame {
         gbcTxtCountry.gridy = 3;
         form.add(txtCountry, gbcTxtCountry);
 
-        // Level label
+        // Attempt label (was 'Level:')
         JLabel lblLevel = new JLabel("Level:");
         lblLevel.setFont(new Font("Arial", Font.PLAIN, 15));
         lblLevel.setForeground(TEXT_DARK);
@@ -318,7 +325,7 @@ public class Manager extends JFrame {
         gbcLblLevel.gridy = 4;
         form.add(lblLevel, gbcLblLevel);
 
-        // Level combo box
+        // Level combo box: only show Beginner / Intermediate / Advanced for registration
         cmbLevel = new JComboBox<>(new String[]{"Beginner", "Intermediate", "Advanced"});
         cmbLevel.setFont(new Font("Arial", Font.PLAIN, 15));
         cmbLevel.setBackground(BG_WHITE);
@@ -394,7 +401,8 @@ public class Manager extends JFrame {
                 BorderFactory.createMatteBorder(0, 0, 1, 0, BORDER_LIGHT),
                 new EmptyBorder(12, 20, 12, 20)));
 
-        lblLevel = new JLabel("Level 1: Beginner");
+        // Show only the attempt number in the quiz header (no level name)
+        lblLevel = new JLabel("Attempt 1");
         lblLevel.setFont(new Font("Arial", Font.BOLD, 16));
         lblLevel.setForeground(TEXT_DARK);
 
@@ -467,7 +475,7 @@ public class Manager extends JFrame {
         String middleName = txtMiddleName.getText().trim();
         String lastName = txtLastName.getText().trim();
         String country = txtCountry.getText().trim();
-        String selectedLevel = (String) cmbLevel.getSelectedItem();
+        String selectedAttemptOrLevel = (String) cmbLevel.getSelectedItem();
 
         if (firstName.isEmpty() || lastName.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please fill in all required fields (First Name, Last Name).",
@@ -482,8 +490,35 @@ public class Manager extends JFrame {
             name = new Name(firstName, middleName, lastName);
         }
         int id = competitorList.getNextId();
+
+        // Determine internal level number (1..5) from registration selection.
+        // Registration shows only Beginner / Intermediate / Advanced. Map as:
+        // Beginner -> 1, Intermediate -> 3, Advanced -> 4 (matches QuizData names).
+        int attemptNumber = 1;
+        if (selectedAttemptOrLevel != null) {
+            String s = selectedAttemptOrLevel.trim();
+            // Backwards-compatible: allow values like "Attempt N"
+            if (s.toLowerCase().startsWith("attempt")) {
+                try {
+                    String digits = s.replaceAll("\\D+", "");
+                    if (!digits.isEmpty()) attemptNumber = Integer.parseInt(digits);
+                } catch (NumberFormatException ex) {
+                    attemptNumber = 1;
+                }
+            } else {
+                // Map level name to internal level index
+                if (s.equalsIgnoreCase("Beginner")) attemptNumber = 1;
+                else if (s.equalsIgnoreCase("Intermediate")) attemptNumber = 3;
+                else if (s.equalsIgnoreCase("Advanced")) attemptNumber = 4;
+                else attemptNumber = 1;
+            }
+            if (attemptNumber < 1) attemptNumber = 1;
+            if (attemptNumber > 5) attemptNumber = 5;
+        }
+        String selectedLevel = QuizData.getLevelName(attemptNumber);
+
         currentCompetitor = new SKMCompetitor(id, name, selectedLevel, country);
-        currentLevel = 1;
+        currentLevel = attemptNumber;
         currentQuestionInLevel = 0;
         levelCorrect = 0;
         totalCorrect = 0;
@@ -498,7 +533,8 @@ public class Manager extends JFrame {
         List<QuizQuestion> levelQuestions = QuizData.getQuestionsForLevel(currentLevel);
         QuizQuestion q = levelQuestions.get(currentQuestionInLevel);
 
-        lblLevel.setText("Level " + currentLevel + ": " + QuizData.getLevelName(currentLevel));
+        // Display only the attempt number while playing (no level name)
+        lblLevel.setText("Attempt " + currentLevel);
         lblQuestion.setText("<html><body style='width:600px'>" + (globalIndex + 1) + ". " + q.getQuestion() + "</body></html>");
 
         String[] opts = q.getOptions();
@@ -604,7 +640,7 @@ public class Manager extends JFrame {
         panel.setBackground(BG_WHITE);
         panel.setBorder(new EmptyBorder(80, 50, 50, 50));
 
-        JLabel lblDone = new JLabel("Level " + currentLevel + " Completed!");
+        JLabel lblDone = new JLabel("Attempt " + currentLevel + " Completed!");
         lblDone.setFont(new Font("Arial", Font.BOLD, 32));
         lblDone.setForeground(ACCENT_GREEN);
         lblDone.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -628,14 +664,15 @@ public class Manager extends JFrame {
         panel.add(Box.createVerticalStrut(40));
 
         if (currentLevel < 5) {
-            JLabel lblNext = new JLabel("Next: Level " + (currentLevel + 1) + " - " + QuizData.getLevelName(currentLevel + 1));
+            // Only show the next attempt number (no level name)
+            JLabel lblNext = new JLabel("Next: Attempt " + (currentLevel + 1));
             lblNext.setFont(new Font("Arial", Font.ITALIC, 15));
             lblNext.setForeground(TEXT_SECONDARY);
             lblNext.setAlignmentX(Component.CENTER_ALIGNMENT);
             panel.add(lblNext);
             panel.add(Box.createVerticalStrut(20));
 
-            JButton btnContinue = createStyledButton("Continue to Level " + (currentLevel + 1), ACCENT_BLUE);
+            JButton btnContinue = createStyledButton("Continue to Attempt " + (currentLevel + 1), ACCENT_BLUE);
             btnContinue.setAlignmentX(Component.CENTER_ALIGNMENT);
             btnContinue.addActionListener(e -> {
                 currentLevel++;
@@ -1150,7 +1187,9 @@ public class Manager extends JFrame {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             Manager app = new Manager();
+            // Start with a small default window; user may maximize with window controls
             app.setVisible(true);
         });
     }
 }
+
