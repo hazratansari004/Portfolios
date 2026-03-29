@@ -31,9 +31,108 @@ const state = {
   pkgSearch:   '',
 };
 
+// Static fallback data so the app can still demonstrate core flows when the PHP
+// backend isn't running. Keep the shape close to the real API response.
+const FALLBACK_PACKAGES = [
+  {
+    id: 1,
+    title: 'Everest Base Camp Trek',
+    description: 'Classic trekking route with panoramic Himalayan views and Sherpa culture.',
+    location: 'Everest Region, Nepal',
+    duration: '12 days',
+    max_persons: 12,
+    price: 1499,
+    image_url: 'https://images.unsplash.com/photo-1509644851169-2acc08aa25b2?w=1200&q=80',
+    available_dates: ['2025-04-15', '2025-05-05', '2025-10-10'],
+    avg_rating: 4.8,
+    review_count: 18,
+    reviews: [
+      { id: 101, user_name: 'Tenzing S.', rating: 5, comment: 'Lifetime trek with expert guides.', created_at: '2024-11-12' },
+      { id: 102, user_name: 'Maya K.',    rating: 4, comment: 'Great acclimatization and views.',  created_at: '2024-09-08' },
+    ],
+  },
+  {
+    id: 2,
+    title: 'Pokhara Lakeside Escape',
+    description: 'Relaxed getaway with paragliding, boating, and sunrise at Sarangkot.',
+    location: 'Pokhara, Nepal',
+    duration: '4 days',
+    max_persons: 8,
+    price: 499,
+    image_url: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=1200&q=80',
+    available_dates: ['2025-04-02', '2025-05-18', '2025-06-07'],
+    avg_rating: 4.6,
+    review_count: 12,
+    reviews: [
+      { id: 201, user_name: 'Arjun D.', rating: 5, comment: 'Paragliding was unforgettable.', created_at: '2024-08-15' },
+      { id: 202, user_name: 'Sonia L.', rating: 4, comment: 'Peaceful lakeside mornings.',   created_at: '2024-07-04' },
+    ],
+  },
+  {
+    id: 3,
+    title: 'Chitwan Jungle Safari',
+    description: 'Wildlife safari with canoe rides, jeep tours, and Tharu cultural evening.',
+    location: 'Chitwan, Nepal',
+    duration: '3 days',
+    max_persons: 10,
+    price: 399,
+    image_url: 'https://images.unsplash.com/photo-1618334215752-7f50c0b786d1?w=1200&q=80',
+    available_dates: ['2025-04-20', '2025-05-12', '2025-06-25'],
+    avg_rating: 4.5,
+    review_count: 9,
+    reviews: [
+      { id: 301, user_name: 'Priya M.', rating: 5, comment: 'Saw rhinos and crocodiles up close!', created_at: '2024-10-03' },
+      { id: 302, user_name: 'Jacob R.', rating: 4, comment: 'Great guides and comfy lodge.',       created_at: '2024-09-19' },
+    ],
+  },
+  {
+    id: 4,
+    title: 'Annapurna Base Camp',
+    description: 'Iconic trek through rhododendron forests to towering Annapurna peaks.',
+    location: 'Annapurna Region, Nepal',
+    duration: '10 days',
+    max_persons: 14,
+    price: 1299,
+    image_url: 'https://images.unsplash.com/photo-1509648076484-18f9aee9b27b?w=1200&q=80',
+    available_dates: ['2025-04-28', '2025-05-22', '2025-09-14'],
+    avg_rating: 4.7,
+    review_count: 15,
+    reviews: [
+      { id: 401, user_name: 'Lhakpa G.', rating: 5, comment: 'Sunrise at ABC is magical.', created_at: '2024-11-01' },
+      { id: 402, user_name: 'Hannah T.', rating: 4, comment: 'Well-paced itinerary and food.', created_at: '2024-08-21' },
+    ],
+  },
+];
+
+function fallbackPackages(search = '', page = 1) {
+  const term = (search || '').toLowerCase();
+  const limit = 12;
+  const filtered = term
+    ? FALLBACK_PACKAGES.filter(pkg =>
+        [pkg.title, pkg.description, pkg.location].some(field =>
+          (field || '').toLowerCase().includes(term)))
+    : FALLBACK_PACKAGES;
+
+  const total = filtered.length;
+  const pages = Math.max(1, Math.ceil(total / limit));
+  const currentPage = Math.min(Math.max(1, page), pages);
+  const start = (currentPage - 1) * limit;
+
+  return {
+    packages: filtered.slice(start, start + limit),
+    total,
+    page: currentPage,
+    pages,
+  };
+}
+
+function fallbackPackageById(id) {
+  return FALLBACK_PACKAGES.find(pkg => Number(pkg.id) === Number(id)) || null;
+}
+
 /* ════════════════════════════════════════════════════
    SESSION PERSISTENCE
-════════════════════════════════════════════════════ */
+ ════════════════════════════════════════════════════ */
 function loadSession() {
   try {
     const raw = localStorage.getItem('te_session');
@@ -100,11 +199,20 @@ const api = {
   getPackages(search = '', page = 1) {
     const qs = new URLSearchParams({ action: 'packages', page });
     if (search) qs.set('search', search);
-    return this._req(`${API}?${qs}`);
+
+    return this._req(`${API}?${qs}`).catch(err => {
+      console.warn('Falling back to static packages:', err);
+      return fallbackPackages(search, page);
+    });
   },
 
   getPackage(id) {
-    return this._req(`${API}?action=package&id=${id}`);
+    return this._req(`${API}?action=package&id=${id}`).catch(err => {
+      console.warn('Falling back to static package detail:', err);
+      const pkg = fallbackPackageById(id);
+      if (pkg) return pkg;
+      throw err;
+    });
   },
 
   createPackage(data) {
