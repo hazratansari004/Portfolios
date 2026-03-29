@@ -250,8 +250,9 @@ const api = {
         return u.searchParams.get('action') || u.pathname || '';
       } catch { return ''; }
     })();
-    const label = actionLabel && actionLabel !== '/' ? actionLabel : 'unknown endpoint';
-    const context = ` for ${label}`;
+    const label = actionLabel && actionLabel !== '/' ? actionLabel : '';
+    const endpointLabel = label || 'unknown endpoint';
+    const context = ` for ${endpointLabel}`;
 
     if (!text) throw new Error(`Empty response from server (status ${res.status})${context}`);
 
