@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TravelExplore — Discover Your Next Adventure</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Feather icons (inline SVG via JS — no external lib needed) -->
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       NAVIGATION
+  ════════════════════════════════════════════ -->
+  <nav class="navbar" id="navbar">
+    <div class="container navbar__inner">
+      <a href="#" class="navbar__brand" data-view="home">
+        ✈ TravelExplore
+      </a>
+
+      <button class="navbar__toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <ul class="navbar__links" id="navLinks">
+        <li><a href="#" data-view="home">Home</a></li>
+        <li><a href="#" data-view="destinations">Destinations</a></li>
+
+        <!-- Shown when logged OUT -->
+        <li class="nav-guest"><a href="#" data-view="login" class="btn btn--outline btn--sm">Login</a></li>
+
+        <!-- Shown when logged IN as user -->
+        <li class="nav-user d-none"><a href="#" data-view="dashboard">My Dashboard</a></li>
+
+        <!-- Shown when logged IN as admin -->
+        <li class="nav-admin d-none"><a href="#" data-view="admin">Admin Panel</a></li>
+
+        <!-- Shown when logged IN (any role) -->
+        <li class="nav-auth d-none">
+          <span class="nav-user-name" id="navUserName"></span>
+          <button class="btn btn--outline btn--sm ml-2" id="logoutBtn">Logout</button>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════
+       VIEWS  (only one is visible at a time)
+  ════════════════════════════════════════════ -->
+  <main id="app">
+
+    <!-- ── HOME VIEW ─────────────────────────── -->
+    <section class="view" id="view-home">
+      <div class="hero">
+        <div class="hero__overlay"></div>
+        <div class="hero__content container">
+          <span class="hero__badge">✈ World-Class Travel</span>
+          <h1 class="hero__title">Discover Your<br>Next <span class="text-accent">Adventure</span></h1>
+          <p class="hero__subtitle">
+            Hand-picked destinations, unbeatable prices, and memories that last a lifetime.
+            Start your journey today.
+          </p>
+          <div class="hero__actions">
+            <button class="btn btn--primary btn--lg" data-view="destinations">
+              Explore Destinations
+            </button>
+            <button class="btn btn--ghost btn--lg" data-view="login">
+              Sign In
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Features strip -->
+      <div class="features container">
+        <div class="features__grid">
+          <div class="feature-card">
+            <div class="feature-card__icon">🌍</div>
+            <h3>50+ Destinations</h3>
+            <p>From tropical beaches to snow-capped peaks, we cover every corner of the globe.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__icon">💰</div>
+            <h3>Best Price Guarantee</h3>
+            <p>We match or beat any competitor price. Your dream trip shouldn't break the bank.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__icon">🛡️</div>
+            <h3>Fully Protected</h3>
+            <p>All bookings are ATOL-protected and backed by 24/7 expert support.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-card__icon">⭐</div>
+            <h3>5-Star Reviews</h3>
+            <p>Over 10,000 five-star reviews from happy travellers worldwide.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── DESTINATIONS VIEW ──────────────────── -->
+    <section class="view d-none" id="view-destinations">
+      <div class="page-header">
+        <div class="container">
+          <h2 class="page-header__title">Travel Packages</h2>
+          <p class="page-header__subtitle">Choose from our hand-picked collection of premium destinations.</p>
+        </div>
+      </div>
+      <div class="container py-10">
+        <div class="packages-grid" id="packagesGrid">
+          <!-- Cards injected by JS -->
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+        <div class="empty-state d-none" id="packagesEmpty">
+          <p>No packages available at this time. Please check back later.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── LOGIN VIEW ─────────────────────────── -->
+    <section class="view d-none" id="view-login">
+      <div class="auth-wrapper">
+        <div class="auth-card">
+          <div class="auth-card__header">
+            <span class="auth-card__logo">✈</span>
+            <h2>Welcome Back</h2>
+            <p>Sign in to manage your bookings</p>
+          </div>
+
+          <form id="loginForm" class="auth-form" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="loginEmail">Email Address</label>
+              <input
+                type="email"
+                id="loginEmail"
+                class="form-input"
+                placeholder="you@example.com"
+                required
+                autocomplete="email"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="loginPassword">Password</label>
+              <div class="input-group">
+                <input
+                  type="password"
+                  id="loginPassword"
+                  class="form-input"
+                  placeholder="••••••••"
+                  required
+                  autocomplete="current-password"
+                />
+                <button type="button" class="input-group__toggle" id="togglePassword" aria-label="Show password">👁</button>
+              </div>
+            </div>
+
+            <div class="form-alert d-none" id="loginAlert" role="alert"></div>
+
+            <button type="submit" class="btn btn--primary btn--full" id="loginSubmit">
+              Sign In
+            </button>
+          </form>
+
+          <p class="auth-card__hint">
+            <strong>Demo accounts:</strong><br>
+            Admin: admin@travelexplore.com / admin123<br>
+            User: user@travelexplore.com / user123
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── USER DASHBOARD VIEW ───────────────── -->
+    <section class="view d-none" id="view-dashboard">
+      <div class="page-header">
+        <div class="container">
+          <h2 class="page-header__title">My Dashboard</h2>
+          <p class="page-header__subtitle">Manage your upcoming trips and booking history.</p>
+        </div>
+      </div>
+      <div class="container py-10">
+        <div class="dashboard-grid">
+          <div class="stat-card">
+            <span class="stat-card__icon">🧳</span>
+            <div>
+              <p class="stat-card__label">Total Bookings</p>
+              <p class="stat-card__value">0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__icon">✈️</span>
+            <div>
+              <p class="stat-card__label">Upcoming Trips</p>
+              <p class="stat-card__value">0</p>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__icon">⭐</span>
+            <div>
+              <p class="stat-card__label">Rewards Points</p>
+              <p class="stat-card__value">250</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mt-8">
+          <div class="card__header">
+            <h3>Booking History</h3>
+          </div>
+          <div class="card__body">
+            <div class="empty-state">
+              <span class="empty-state__icon">📋</span>
+              <p>You haven't made any bookings yet.</p>
+              <button class="btn btn--primary btn--sm mt-4" data-view="destinations">Browse Packages</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── ADMIN DASHBOARD VIEW ──────────────── -->
+    <section class="view d-none" id="view-admin">
+      <div class="page-header">
+        <div class="container">
+          <h2 class="page-header__title">Admin Panel</h2>
+          <p class="page-header__subtitle">Manage all travel packages and system data.</p>
+        </div>
+      </div>
+      <div class="container py-10">
+
+        <!-- Summary cards -->
+        <div class="dashboard-grid mb-8">
+          <div class="stat-card stat-card--blue">
+            <span class="stat-card__icon">📦</span>
+            <div>
+              <p class="stat-card__label">Total Packages</p>
+              <p class="stat-card__value" id="adminPackageCount">—</p>
+            </div>
+          </div>
+          <div class="stat-card stat-card--green">
+            <span class="stat-card__icon">👥</span>
+            <div>
+              <p class="stat-card__label">Registered Users</p>
+              <p class="stat-card__value">2</p>
+            </div>
+          </div>
+          <div class="stat-card stat-card--orange">
+            <span class="stat-card__icon">📅</span>
+            <div>
+              <p class="stat-card__label">Total Bookings</p>
+              <p class="stat-card__value">0</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Packages table -->
+        <div class="card">
+          <div class="card__header">
+            <h3>All Travel Packages</h3>
+            <button class="btn btn--primary btn--sm">+ Add Package</button>
+          </div>
+          <div class="card__body p-0">
+            <div class="table-wrapper">
+              <table class="data-table" id="adminPackagesTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Image</th>
+                    <th>Title</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminPackagesTbody">
+                  <!-- Rows injected by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════════
+       FOOTER
+  ════════════════════════════════════════════ -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <p class="footer__brand">✈ TravelExplore</p>
+      <p class="footer__copy">© 2024 TravelExplore. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Toast notification -->
+  <div class="toast d-none" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
