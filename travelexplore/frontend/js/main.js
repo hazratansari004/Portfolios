@@ -163,6 +163,61 @@ function fallbackPackageById(id) {
   return FALLBACK_PACKAGES.find(pkg => Number(pkg.id) === Number(id)) || null;
 }
 
+/* ════════════════════════════════════════════════════
+   DEMO AUTH FALLBACK (for static hosting)
+════════════════════════════════════════════════════ */
+const DEMO_AUTH_KEY = 'te_demo_auth_users';
+
+function readDemoUsers() {
+  try {
+    const raw = localStorage.getItem(DEMO_AUTH_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function writeDemoUsers(users) {
+  try {
+    localStorage.setItem(DEMO_AUTH_KEY, JSON.stringify(users));
+  } catch { /* ignore */ }
+}
+
+function makeDemoToken(id) {
+  return `demo-${id}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function demoRegisterUser(name, email, password) {
+  const users = readDemoUsers();
+  const exists = users.some(u => (u.email || '').toLowerCase() === email.toLowerCase());
+  if (exists) throw new Error('Email address is already registered (demo mode).');
+
+  const user = { id: Date.now(), name, email, role: 'user' };
+  users.push({ ...user, password });
+  writeDemoUsers(users);
+  return { user, token: makeDemoToken(user.id) };
+}
+
+function demoLoginUser(email, password) {
+  const users = readDemoUsers();
+  const match = users.find(u =>
+    (u.email || '').toLowerCase() === email.toLowerCase() &&
+    u.password === password
+  );
+  if (!match) throw new Error('Invalid email or password (demo mode).');
+
+  const { password: _discardedPassword, ...user } = match;
+  return { user, token: makeDemoToken(user.id) };
+}
+
+function shouldUseDemoAuth(err) {
+  const status = err?.status;
+  const code   = err?.code;
+  return code === 'EMPTY_RESPONSE' ||
+         code === 'PARSE_ERROR'   ||
+         code === 'NETWORK_ERROR' ||
+         status === 404           ||
+         status === 405;
+}
+
 function filterPopularDestinations() {
   const term = (popularState.search || '').toLowerCase();
   return POPULAR_DESTINATIONS.filter(d => {
@@ -242,7 +297,15 @@ const api = {
   },
 
   async _req(url, opts = {}) {
-    const res = await fetch(url, opts);
+    let res;
+    try {
+      res = await fetch(url, opts);
+    } catch {
+      const err = new Error('Network error contacting server.');
+      err.code = 'NETWORK_ERROR';
+      throw err;
+    }
+
     const text = await res.text();
     const actionLabel = (() => {
       try {
@@ -253,15 +316,30 @@ const api = {
     const endpointLabel = (actionLabel && actionLabel !== '/') ? actionLabel : 'unknown endpoint';
     const context = ` for ${endpointLabel}`;
 
-    if (!text) throw new Error(`Empty response from server (status ${res.status})${context}`);
-
-    let data;
-    try { data = JSON.parse(text); }
-    catch {
-      throw new Error(`Unable to parse server response (status ${res.status})${context}`);
+    if (!text) {
+      const err = new Error(`Empty response from server (status ${res.status})${context}`);
+      err.status = res.status;
+      err.code   = 'EMPTY_RESPONSE';
+      throw err;
     }
 
-    if (!data.success) throw new Error(data.message || `HTTP ${res.status}`);
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      const err = new Error(`Unable to parse server response (status ${res.status})${context}`);
+      err.status = res.status;
+      err.code   = 'PARSE_ERROR';
+      throw err;
+    }
+
+    if (!data.success) {
+      const err = new Error(data.message || `HTTP ${res.status}`);
+      err.status = res.status;
+      err.code   = 'API_ERROR';
+      err.payload = data;
+      throw err;
+    }
     return data.data;
   },
 
@@ -270,6 +348,11 @@ const api = {
       method:  'POST',
       headers: this._headers(),
       body:    JSON.stringify({ name, email, password }),
+    }).catch(err => {
+      if (shouldUseDemoAuth(err)) {
+        return demoRegisterUser(name, email, password);
+      }
+      throw err;
     });
   },
 
@@ -278,6 +361,11 @@ const api = {
       method:  'POST',
       headers: this._headers(),
       body:    JSON.stringify({ email, password }),
+    }).catch(err => {
+      if (shouldUseDemoAuth(err)) {
+        return demoLoginUser(email, password);
+      }
+      throw err;
     });
   },
 
@@ -285,6 +373,11 @@ const api = {
     return this._req(`${API}?action=logout`, {
       method:  'POST',
       headers: this._headers(true),
+    }).catch(err => {
+      if (err?.code === 'NETWORK_ERROR' || err?.status === 404 || err?.status === 405) {
+        return {}; // session already cleared client-side
+      }
+      throw err;
     });
   },
 
