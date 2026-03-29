@@ -113,58 +113,58 @@ INSERT INTO users (name, email, password, role) VALUES
 
 INSERT INTO packages (title, description, location, duration, max_persons, price, image_url, available_dates) VALUES
 (
-  'Bali Paradise Retreat',
-  'Experience the magic of Bali — lush rice terraces, ancient Hindu temples, vibrant arts scene, world-class surfing and a thriving nightlife. Includes guided temple tours, cooking class, and sunset beach dinner.',
-  'Bali, Indonesia', '7 days / 6 nights', 12, 1299.00,
-  'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80',
-  '["2025-07-01","2025-07-15","2025-08-01","2025-08-15","2025-09-01"]'
+  'Mount Everest Region',
+  'Legendary Himalayan trekking past Sherpa villages toward the world’s highest peak. Sunrise views, prayer flags, and the iconic Everest Base Camp trail.',
+  'Solukhumbu, Nepal', '12 days / 11 nights', 12, 3200.00,
+  'https://images.unsplash.com/photo-1601062224947-3ca636754fb2?w=1080&q=80',
+  '["2025-10-05","2025-10-19","2025-11-02","2026-03-15","2026-04-05"]'
 ),
 (
-  'Santorini Sunset Experience',
-  'Iconic white-washed buildings perched on volcanic cliffs, breathtaking caldera views, and legendary golden sunsets over the Aegean Sea. Includes private villa, wine-tasting tour, and sailing excursion.',
-  'Santorini, Greece', '5 days / 4 nights', 8, 2199.00,
-  'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&q=80',
-  '["2025-06-10","2025-06-24","2025-07-08","2025-07-22","2025-08-05"]'
+  'Kathmandu Valley Heritage',
+  'UNESCO-listed temples, vibrant bazaars, and living culture across Kathmandu, Patan, and Bhaktapur. Perfect for food, art, and history lovers.',
+  'Kathmandu Valley, Nepal', '5 days / 4 nights', 16, 750.00,
+  'https://images.unsplash.com/photo-1676873785328-6918536b7096?w=1080&q=80',
+  '["2025-06-01","2025-06-15","2025-07-01","2025-08-01","2025-09-01"]'
 ),
 (
-  'Machu Picchu Trek',
-  'Trek through the misty Andes to the legendary Inca citadel. Discover ancient history, dramatic mountain scenery, and breathtaking altitude. Includes Inca Trail permit, professional guide, and train return.',
-  'Cusco, Peru', '8 days / 7 nights', 10, 1849.00,
-  'https://images.unsplash.com/photo-1526392060635-9d6019884377?w=800&q=80',
-  '["2025-05-15","2025-06-01","2025-06-15","2025-07-01","2025-09-15"]'
+  'Pokhara Lakeside Escape',
+  'Serene Phewa Lake sunsets, paragliding over Annapurna, and sunrise at Sarangkot. A restful yet adventure-ready base in Nepal’s west.',
+  'Pokhara, Nepal', '6 days / 5 nights', 14, 1100.00,
+  'https://images.unsplash.com/photo-1647679208171-85d25dcc22c2?w=1080&q=80',
+  '["2025-05-10","2025-06-05","2025-07-10","2025-09-05","2025-10-10"]'
 ),
 (
-  'Kenya Big Five Safari',
-  'Witness the Great Migration on the Masai Mara plains. Encounter the Big Five on daily game drives, experience a traditional Maasai village, and sleep under the stars in a luxury tented camp.',
-  'Masai Mara, Kenya', '6 days / 5 nights', 6, 3499.00,
-  'https://images.unsplash.com/photo-1612686635542-2244ed9f8ddc?w=800&q=80',
-  '["2025-07-10","2025-07-24","2025-08-07","2025-08-21","2025-09-04"]'
+  'Chitwan Jungle Safari',
+  'Nepal’s first national park—spot one-horned rhinos, Bengal tigers, and rich birdlife. Includes jeep safari, canoe ride, and Tharu cultural evening.',
+  'Chitwan, Nepal', '4 days / 3 nights', 10, 900.00,
+  'https://images.unsplash.com/photo-1748343200591-3971d003dff4?w=1080&q=80',
+  '["2025-11-01","2025-11-15","2025-12-01","2026-02-01","2026-03-01"]'
 ),
 (
-  'Kyoto Cultural Journey',
-  'Wander through thousands of vermilion torii gates at Fushimi Inari, serene bamboo forests in Arashiyama, and the historic geisha district of Gion. Includes tea ceremony, kimono rental, and Nishiki market tour.',
-  'Kyoto, Japan', '6 days / 5 nights', 10, 2099.00,
-  'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80',
-  '["2025-04-01","2025-04-15","2025-10-01","2025-10-15","2025-11-01"]'
+  'Lumbini Pilgrimage',
+  'Sacred birthplace of Lord Buddha. Visit Mayadevi Temple, ancient monasteries, and the Ashoka Pillar amid peaceful gardens.',
+  'Lumbini, Nepal', '3 days / 2 nights', 20, 450.00,
+  'https://images.unsplash.com/photo-1625366877201-5f143a7b3118?w=1080&q=80',
+  '["2025-05-05","2025-06-05","2025-09-05","2025-10-05","2025-11-05"]'
 ),
 (
-  'Patagonia Wilderness Hike',
-  'Hike among jagged granite peaks, turquoise lakes, and ancient glaciers at the southern tip of the Americas. Includes W-trek in Torres del Paine, glacier hike, and boat to Perito Moreno.',
-  'Patagonia, Argentina', '10 days / 9 nights', 8, 2649.00,
-  'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=800&q=80',
-  '["2025-11-15","2025-12-01","2025-12-15","2026-01-05","2026-01-20"]'
+  'Bhaktapur Heritage Walk',
+  'Medieval Newari architecture, pottery squares, and stunning temples. A time-travel stroll through Nepal’s living museum city.',
+  'Bhaktapur, Nepal', '2 days / 1 night', 18, 300.00,
+  'https://images.unsplash.com/photo-1745972263116-c9515bbf28c3?w=1080&q=80',
+  '["2025-04-15","2025-05-15","2025-08-15","2025-09-15","2025-10-15"]'
 ),
 (
-  'Maldives Overwater Escape',
-  'Sleep in an overwater bungalow above crystal-clear turquoise lagoons teeming with marine life. Includes snorkelling with manta rays, sunset dolphin cruise, and couples spa treatment.',
-  'South Male Atoll, Maldives', '5 days / 4 nights', 4, 3299.00,
-  'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=800&q=80',
-  '["2025-06-05","2025-07-05","2025-08-05","2025-09-05","2025-10-05"]'
+  'Annapurna Circuit Highlights',
+  'Classic Himalayan circuit with sweeping vistas, apple orchards of Manang, and the Thorong La high pass experience in a shorter format.',
+  'Annapurna Region, Nepal', '10 days / 9 nights', 12, 2400.00,
+  'https://images.unsplash.com/photo-1509644851169-2acc08aa25b2?w=1080&q=80',
+  '["2025-10-10","2025-10-24","2025-11-07","2026-03-20","2026-04-10"]'
 ),
 (
-  'Amalfi Coast Drive',
-  'Wind along one of the world''s most dramatic coastal roads, stopping at Positano, Ravello, and Amalfi. Includes boat trip to Capri, limoncello distillery visit, and Neapolitan cooking class.',
-  'Amalfi, Italy', '7 days / 6 nights', 10, 1999.00,
-  'https://images.unsplash.com/photo-1533587851505-d119e13fa0d7?w=800&q=80',
-  '["2025-05-20","2025-06-10","2025-07-01","2025-08-10","2025-09-10"]'
+  'Langtang Valley Trek',
+  'Alpine meadows, red panda habitats, and Tamang culture near Kathmandu. A rewarding trek with glaciers and sweeping valley views.',
+  'Langtang, Nepal', '8 days / 7 nights', 14, 1800.00,
+  'https://images.unsplash.com/photo-1500534623283-312aade485b7?w=1080&q=80',
+  '["2025-09-20","2025-10-04","2025-10-18","2026-03-10","2026-04-02"]'
 );
