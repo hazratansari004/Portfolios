@@ -244,13 +244,20 @@ const api = {
   async _req(url, opts = {}) {
     const res = await fetch(url, opts);
     const text = await res.text();
-    if (!text) throw new Error(`Empty response from server (status ${res.status}) at ${url}`);
+    const actionLabel = (() => {
+      try {
+        const u = new URL(url, location.origin);
+        return u.searchParams.get('action') || u.pathname || '';
+      } catch { return ''; }
+    })();
+    const context = actionLabel ? ` for ${actionLabel}` : '';
+
+    if (!text) throw new Error(`Empty response from server (status ${res.status})${context}`);
 
     let data;
     try { data = JSON.parse(text); }
     catch {
-      const preview = text.slice(0, 120) || 'no content';
-      throw new Error(`Unable to parse server response (status ${res.status}): ${preview}`);
+      throw new Error(`Unable to parse server response (status ${res.status})${context}`);
     }
 
     if (!data.success) throw new Error(data.message || `HTTP ${res.status}`);
