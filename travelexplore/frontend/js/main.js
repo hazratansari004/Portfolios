@@ -242,10 +242,17 @@ const api = {
   },
 
   async _req(url, opts = {}) {
-    const res  = await fetch(url, opts);
-    const json = await res.json();
-    if (!json.success) throw new Error(json.message || `HTTP ${res.status}`);
-    return json.data;
+    const res = await fetch(url, opts);
+    let data;
+    try {
+      const text = await res.text();
+      if (!text) throw new Error('Empty response from server.');
+      data = JSON.parse(text);
+    } catch (err) {
+      throw new Error(err.message || 'Unable to parse server response.');
+    }
+    if (!data.success) throw new Error(data.message || `HTTP ${res.status}`);
+    return data.data;
   },
 
   register(name, email, password) {
