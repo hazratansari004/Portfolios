@@ -31,6 +31,39 @@ const state = {
   pkgSearch:   '',
 };
 
+const POPULAR_DESTINATIONS = [
+  { id: 'bali',             title: 'Bali, Indonesia',           location: 'Bali, Indonesia',           region: 'Asia',          theme: 'Beach',    tagline: 'Beach Paradise',     description: 'Tropical island with stunning beaches, rice terraces, and vibrant culture.', rating: 4.8, price: 850,  image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80' },
+  { id: 'kyoto',            title: 'Kyoto, Japan',              location: 'Kyoto, Japan',              region: 'Asia',          theme: 'Culture',  tagline: 'Cultural Heritage',  description: 'Ancient temples, traditional gardens, and the beauty of Japanese culture.',     rating: 4.9, price: 1100, image: 'https://images.unsplash.com/photo-1504788363733-507549153474?w=1200&q=80' },
+  { id: 'swiss-alps',       title: 'Swiss Alps, Switzerland',   location: 'Swiss Alps, Switzerland',   region: 'Europe',        theme: 'Adventure',tagline: 'Adventure',            description: 'Majestic mountain peaks, skiing, and breathtaking alpine scenery.',            rating: 4.8, price: 980,  image: 'https://images.unsplash.com/photo-1508261306217-70c4e4575040?w=1200&q=80' },
+  { id: 'paris',            title: 'Paris, France',             location: 'Paris, France',             region: 'Europe',        theme: 'City',     tagline: 'City Escape',        description: 'The city of lights — art, fashion, cuisine, and the Eiffel Tower.',              rating: 4.7, price: 1500, image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200&q=80' },
+  { id: 'safari',           title: 'Safari, Kenya',             location: 'Maasai Mara, Kenya',        region: 'Africa',        theme: 'Wildlife', tagline: 'Wildlife',             description: 'Witness the great migration and incredible African wildlife up close.',       rating: 4.6, price: 1800, image: 'https://images.unsplash.com/photo-1508675801627-066ac4346a24?w=1200&q=80' },
+  { id: 'maldives',         title: 'Maldives, Maldives',        location: 'Maldives',                  region: 'Asia',          theme: 'Luxury',   tagline: 'Luxury Resort',       description: 'Crystal-clear waters, overwater villas, and world-class snorkeling.',             rating: 4.9, price: 2200, image: 'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=1200&q=80' },
+  { id: 'santorini',        title: 'Santorini, Greece',         location: 'Santorini, Greece',         region: 'Europe',        theme: 'Romantic', tagline: 'Romantic Getaway',     description: 'Iconic white-washed buildings, stunning sunsets, and Aegean Sea views.',        rating: 4.7, price: 1300, image: 'https://images.unsplash.com/photo-1505765050516-f72dcac9c60e?w=1200&q=80' },
+  { id: 'dubai',            title: 'Dubai, UAE',                location: 'Dubai, UAE',                region: 'Asia',          theme: 'City',     tagline: 'Modern Marvel',       description: 'Futuristic skyline, luxury shopping, and desert adventures.',                    rating: 4.8, price: 1050, image: 'https://images.unsplash.com/photo-1504270997636-07ddfbd48945?w=1200&q=80' },
+  { id: 'machu-picchu',     title: 'Machu Picchu, Peru',        location: 'Machu Picchu, Peru',        region: 'South America', theme: 'Culture',  tagline: 'Historic Wonder',     description: 'Ancient Incan citadel high in the Andes mountains.',                             rating: 4.9, price: 1400, image: 'https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=1200&q=80' },
+  { id: 'iceland',          title: 'Iceland, Iceland',          location: 'Iceland',                   region: 'Europe',        theme: 'Adventure',tagline: 'Northern Lights',       description: 'Aurora borealis, geysers, glaciers, and volcanic landscapes.',                 rating: 4.8, price: 1600, image: 'https://images.unsplash.com/photo-1500048993953-d23a436266cf?w=1200&q=80' },
+  { id: 'new-york',         title: 'New York, USA',             location: 'New York, USA',             region: 'North America', theme: 'City',     tagline: 'Urban Explorer',      description: 'The Big Apple — Broadway, Central Park, and world-famous landmarks.',            rating: 4.7, price: 1200, image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200&q=80' },
+  { id: 'venice',           title: 'Venice, Italy',             location: 'Venice, Italy',             region: 'Europe',        theme: 'Romantic', tagline: 'Romantic Escape',      description: 'Canals, gondolas, architecture, and Italian charm at every corner.',            rating: 4.6, price: 950,  image: 'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=1200&q=80&sat=-20' },
+  { id: 'everest',          title: 'Mount Everest, Nepal',      location: 'Mount Everest, Nepal',      region: 'Asia',          theme: 'Adventure',tagline: 'Extreme Adventure',     description: 'Trek through breathtaking Himalayan trails to Everest Base Camp.',             rating: 4.9, price: 2000, image: 'https://images.unsplash.com/photo-1509648076484-18f9aee9b27b?w=1200&q=80' },
+  { id: 'kathmandu',        title: 'Kathmandu, Nepal',          location: 'Kathmandu, Nepal',          region: 'Asia',          theme: 'Culture',  tagline: 'Cultural Heritage',  description: 'Ancient temples, vibrant Durbar squares, and the gateway to the Himalayas.',   rating: 4.7, price: 600,  image: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=1200&q=80' },
+  { id: 'rio',              title: 'Rio de Janeiro, Brazil',    location: 'Rio de Janeiro, Brazil',    region: 'South America', theme: 'City',     tagline: 'Carnival Vibes',      description: 'Samba, beaches, Christ the Redeemer, and the energy of Copacabana.',             rating: 4.7, price: 1100, image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&q=80' },
+  { id: 'sydney',           title: 'Sydney, Australia',         location: 'Sydney, Australia',         region: 'Oceania',       theme: 'City',     tagline: 'Coastal City',        description: 'Iconic Opera House, Harbour Bridge, and stunning coastal beaches.',              rating: 4.8, price: 1350, image: 'https://images.unsplash.com/photo-1506976785307-8732e854ad89?w=1200&q=80' },
+  { id: 'cairo',            title: 'Cairo, Egypt',              location: 'Cairo, Egypt',              region: 'Africa',        theme: 'Culture',  tagline: 'Ancient Wonders',     description: 'Pyramids of Giza, the Sphinx, and thousands of years of history.',              rating: 4.6, price: 750,  image: 'https://images.unsplash.com/photo-1524492449092-4025a66b8115?w=1200&q=80' },
+  { id: 'bangkok',          title: 'Bangkok, Thailand',         location: 'Bangkok, Thailand',         region: 'Asia',          theme: 'Food',     tagline: 'Street Food Capital', description: 'Ornate temples, floating markets, and the world’s best street food.',            rating: 4.7, price: 700,  image: 'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=1200&q=80' },
+  { id: 'cape-town',        title: 'Cape Town, South Africa',   location: 'Cape Town, South Africa',   region: 'Africa',        theme: 'Nature',   tagline: 'Nature & City',       description: 'Table Mountain, vineyards, penguins, and stunning coastal drives.',              rating: 4.8, price: 1000, image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200&q=80' },
+  { id: 'marrakech',        title: 'Marrakech, Morocco',        location: 'Marrakech, Morocco',        region: 'Africa',        theme: 'Culture',  tagline: 'Exotic Markets',      description: 'Vibrant souks, riads, spices, and mesmerizing Moroccan architecture.',          rating: 4.5, price: 650,  image: 'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=1200&q=80&sat=-10' },
+  { id: 'cancun',           title: 'Cancún, Mexico',            location: 'Cancún, Mexico',            region: 'North America', theme: 'Beach',    tagline: 'Beach Resort',        description: 'Turquoise Caribbean waters, Mayan ruins, and all-inclusive resorts.',            rating: 4.6, price: 900,  image: 'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=1200&q=80&sat=10' },
+  { id: 'petra',            title: 'Petra, Jordan',             location: 'Petra, Jordan',             region: 'Asia',          theme: 'Culture',  tagline: 'Lost City',           description: 'The rose-red city carved into rock — one of the New Seven Wonders.',             rating: 4.9, price: 850,  image: 'https://images.unsplash.com/photo-1526804507-25e8e2ee632e?w=1200&q=80' },
+  { id: 'london',           title: 'London, England',           location: 'London, England',           region: 'Europe',        theme: 'City',     tagline: 'Historic Capital',    description: 'Buckingham Palace, Tower Bridge, and centuries of royal history.',               rating: 4.6, price: 1000, image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200&q=80&sat=-12' },
+  { id: 'toronto',          title: 'Toronto, Canada',           location: 'Toronto, Canada',           region: 'North America', theme: 'City',     tagline: 'Multicultural Hub',   description: 'CN Tower, diverse neighborhoods, and a thriving food scene.',                    rating: 4.7, price: 1150, image: 'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=1200&q=80&sat=15' },
+  { id: 'sri-lanka',        title: 'Sri Lanka, Sri Lanka',      location: 'Sri Lanka',                 region: 'Asia',          theme: 'Beach',    tagline: 'Tropical Paradise',   description: 'Tea plantations, ancient ruins, golden beaches, and elephant safaris.',          rating: 4.7, price: 650,  image: 'https://images.unsplash.com/photo-1526481280695-3c469c2f3a38?w=1200&q=80' },
+  { id: 'patagonia',        title: 'Patagonia, Argentina',      location: 'Patagonia, Argentina',      region: 'South America', theme: 'Adventure',tagline: 'Wild Frontier',        description: 'Glaciers, mountains, pristine lakes, and untouched wilderness.',                 rating: 4.8, price: 1700, image: 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?w=1200&q=80' },
+  { id: 'amsterdam',        title: 'Amsterdam, Netherlands',    location: 'Amsterdam, Netherlands',    region: 'Europe',        theme: 'Culture',  tagline: 'Canal City',          description: 'Tulips, windmills, world-class museums, and charming canal houses.',            rating: 4.7, price: 950,  image: 'https://images.unsplash.com/photo-1526481280695-3c469c2f3a38?w=1200&q=80&sat=-15' },
+  { id: 'hanoi',            title: 'Hanoi, Vietnam',            location: 'Hanoi, Vietnam',            region: 'Asia',          theme: 'Food',     tagline: 'Street Food Haven',   description: 'Ancient quarter, pho, lantern-lit streets, and Ha Long Bay nearby.',             rating: 4.6, price: 550,  image: 'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=1200&q=80&sat=-5' },
+];
+
+const popularState = { region: 'All', theme: '', search: '' };
+
 // Static fallback data so the app can still demonstrate core flows when the PHP
 // backend isn't running. Keep the shape close to the real API response.
 const FALLBACK_PACKAGES = [
@@ -128,6 +161,48 @@ function fallbackPackages(search = '', page = 1) {
 
 function fallbackPackageById(id) {
   return FALLBACK_PACKAGES.find(pkg => Number(pkg.id) === Number(id)) || null;
+}
+
+function filterPopularDestinations() {
+  const term = (popularState.search || '').toLowerCase();
+  return POPULAR_DESTINATIONS.filter(d => {
+    const matchesRegion = popularState.region === 'All' || d.region === popularState.region;
+    const matchesTheme  = !popularState.theme || d.theme === popularState.theme;
+    const haystack = [d.title, d.location, d.tagline, d.theme].join(' ').toLowerCase();
+    const matchesSearch = !term || haystack.includes(term);
+    return matchesRegion && matchesTheme && matchesSearch;
+  });
+}
+
+function renderPopularDestinations() {
+  const grid    = document.getElementById('popularGrid');
+  const emptyEl = document.getElementById('popularEmpty');
+  if (!grid) return;
+
+  const items = filterPopularDestinations();
+  if (!items.length) {
+    grid.innerHTML = '';
+    emptyEl?.classList.remove('d-none');
+    return;
+  }
+
+  emptyEl?.classList.add('d-none');
+  grid.innerHTML = items.map(d => `
+    <article class="popular-card">
+      <img class="popular-card__img" src="${d.image}" alt="${d.title}" loading="lazy">
+      <div class="popular-card__body">
+        <span class="popular-card__eyebrow">${d.tagline}</span>
+        <h3 class="popular-card__title">${d.title}</h3>
+        <p class="popular-card__location">${d.location}</p>
+        <p class="popular-card__desc">${d.description}</p>
+        <div class="popular-card__meta">
+          <span class="popular-card__rating">⭐ ${d.rating.toFixed(1)}</span>
+          <span class="popular-card__price">$${d.price}/person</span>
+        </div>
+        <button class="btn btn--outline popular-card__btn" data-view="register">Book Now</button>
+      </div>
+    </article>
+  `).join('');
 }
 
 /* ════════════════════════════════════════════════════
@@ -1225,6 +1300,33 @@ document.getElementById('heroSearchBtn')?.addEventListener('click', () => {
 document.getElementById('heroSearch')?.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') document.getElementById('heroSearchBtn').click();
 });
+
+/* ════════════════════════════════════════════════════
+   POPULAR DESTINATIONS (HOME)
+════════════════════════════════════════════════════ */
+document.getElementById('popularSearch')?.addEventListener('input', (e) => {
+  popularState.search = e.target.value.trim();
+  renderPopularDestinations();
+});
+
+document.getElementById('popularRegionFilters')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-popular-category]');
+  if (!btn) return;
+  popularState.region = btn.dataset.popularCategory;
+  document.querySelectorAll('[data-popular-category]').forEach(b => b.classList.toggle('chip--active', b === btn));
+  renderPopularDestinations();
+});
+
+document.getElementById('popularThemeFilters')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-popular-theme]');
+  if (!btn) return;
+  const newTheme = btn.dataset.popularTheme;
+  popularState.theme = popularState.theme === newTheme ? '' : newTheme;
+  document.querySelectorAll('[data-popular-theme]').forEach(b => b.classList.toggle('chip--active', b.dataset.popularTheme === popularState.theme));
+  renderPopularDestinations();
+});
+
+renderPopularDestinations();
 
 /* ════════════════════════════════════════════════════
    DESTINATION SEARCH

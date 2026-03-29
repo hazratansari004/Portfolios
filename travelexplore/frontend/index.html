@@ -54,46 +54,139 @@
       <div class="hero">
         <div class="hero__overlay"></div>
         <div class="hero__content container">
-          <span class="hero__badge">✈ Explore Nepal</span>
-          <h1 class="hero__title">Discover Nepal's<br><span class="text-accent">Himalayan Wonders</span></h1>
+          <span class="hero__badge">TravelExplore</span>
+          <h1 class="hero__title">Discover Your Next Adventure</h1>
           <p class="hero__subtitle">
-            Hand-picked Nepal experiences—from Kathmandu’s heritage to Everest panoramas and jungle safaris.
+            Explore breathtaking destinations, plan unforgettable trips, and create memories that last a lifetime.
           </p>
           <div class="hero__search">
-            <input type="text" id="heroSearch" class="hero__search-input" placeholder="Search Nepal destinations, e.g. Everest, Pokhara…" />
-            <button class="btn btn--accent btn--lg" id="heroSearchBtn">🔍 Search</button>
+            <input type="text" id="heroSearch" class="hero__search-input" placeholder="Search by country, city, or tag (e.g. Nepal, Beach)..." />
+            <button class="btn btn--accent btn--lg" id="heroSearchBtn">Get Started</button>
           </div>
           <div class="hero__actions">
-            <button class="btn btn--primary btn--lg" data-view="destinations">Explore Packages</button>
-            <button class="btn btn--ghost btn--lg" data-view="register">Join Free</button>
+            <button class="btn btn--primary btn--lg" data-view="destinations">Explore</button>
+            <button class="btn btn--ghost btn--lg" data-view="register">Sign Up</button>
+          </div>
+          <div class="hero__stats">
+            <div class="stat-pill"><strong>500+</strong><span>Destinations</span></div>
+            <div class="stat-pill"><strong>50K+</strong><span>Happy Travelers</span></div>
+            <div class="stat-pill"><strong>120+</strong><span>Countries</span></div>
+            <div class="stat-pill"><strong>4.9</strong><span>Avg Rating</span></div>
           </div>
         </div>
       </div>
 
-      <div class="features container">
-        <div class="features__grid">
-          <div class="feature-card">
-            <div class="feature-card__icon">🌍</div>
-            <h3>50+ Destinations</h3>
-            <p>From tropical beaches to snow-capped peaks, we cover every corner of the globe.</p>
+      <section class="section">
+        <div class="container">
+          <div class="section__header">
+            <p class="section__eyebrow">Why Travel With Us</p>
+            <h2>We make travel planning simple, secure, and inspiring.</h2>
           </div>
-          <div class="feature-card">
-            <div class="feature-card__icon">💰</div>
-            <h3>Best Price Guarantee</h3>
-            <p>We match or beat any competitor price. Your dream trip shouldn't break the bank.</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-card__icon">🛡️</div>
-            <h3>Fully Protected</h3>
-            <p>All bookings backed by 24/7 expert support and full travel protection.</p>
-          </div>
-          <div class="feature-card">
-            <div class="feature-card__icon">⭐</div>
-            <h3>5-Star Reviews</h3>
-            <p>Over 10,000 five-star reviews from happy travellers worldwide.</p>
+          <div class="features__grid">
+            <div class="feature-card">
+              <div class="feature-card__icon">🧭</div>
+              <h3>Curated Destinations</h3>
+              <p>Hand-picked locations from travel experts around the world.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-card__icon">🌐</div>
+              <h3>Global Coverage</h3>
+              <p>Explore destinations across every continent and culture.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-card__icon">🔒</div>
+              <h3>Secure Booking</h3>
+              <p>Your information is safe with our encrypted platform.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-card__icon">🧳</div>
+              <h3>Personalized Trips</h3>
+              <p>Get recommendations tailored to your travel style.</p>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      <section class="section section--muted">
+        <div class="container">
+          <div class="section__header">
+            <p class="section__eyebrow">Popular Destinations</p>
+            <h2>Handpicked destinations loved by travelers worldwide.</h2>
+          </div>
+
+          <div class="popular-controls">
+            <div class="popular-search">
+              <span class="popular-search__icon">🔍</span>
+              <input id="popularSearch" class="popular-search__input" type="text" placeholder="Search by country, city, or tag (e.g. Nepal, Beach)..." />
+            </div>
+            <div class="filter-chips" id="popularRegionFilters">
+              <button class="chip chip--active" data-popular-category="All">All</button>
+              <button class="chip" data-popular-category="Asia">Asia</button>
+              <button class="chip" data-popular-category="Europe">Europe</button>
+              <button class="chip" data-popular-category="Africa">Africa</button>
+              <button class="chip" data-popular-category="North America">North America</button>
+              <button class="chip" data-popular-category="South America">South America</button>
+              <button class="chip" data-popular-category="Oceania">Oceania</button>
+            </div>
+            <div class="filter-chips filter-chips--themes" id="popularThemeFilters">
+              <button class="chip" data-popular-theme="Beach">Beach Paradise</button>
+              <button class="chip" data-popular-theme="Culture">Cultural Heritage</button>
+              <button class="chip" data-popular-theme="Adventure">Adventure</button>
+              <button class="chip" data-popular-theme="City">City Escape</button>
+              <button class="chip" data-popular-theme="Luxury">Luxury Resort</button>
+              <button class="chip" data-popular-theme="Wildlife">Wildlife</button>
+            </div>
+          </div>
+
+          <div class="popular-grid" id="popularGrid"></div>
+          <div class="empty-state d-none" id="popularEmpty">
+            <span class="empty-state__icon">🧭</span>
+            <p>No destinations found. Try another search.</p>
+          </div>
+
+          <div class="add-destination-card">
+            <div>
+              <p class="add-destination__eyebrow">Add a New Destination</p>
+              <h3>Know a place we should feature?</h3>
+              <p>Share your favorite spot and inspire fellow travelers.</p>
+            </div>
+            <button class="btn btn--outline" data-view="contact">Suggest Destination</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div class="section__header section__header--center">
+            <p class="section__eyebrow">What Travelers Say</p>
+            <h2>Real stories from people who explore with us.</h2>
+          </div>
+          <div class="testimonials">
+            <div class="testimonial">
+              <p class="testimonial__quote">"TravelExplore made planning our honeymoon so easy. The destinations are amazing!"</p>
+              <p class="testimonial__author">Sarah M.</p>
+            </div>
+            <div class="testimonial">
+              <p class="testimonial__quote">"Best travel platform I've used. Found incredible deals for our family trip to Bali."</p>
+              <p class="testimonial__author">James K.</p>
+            </div>
+            <div class="testimonial">
+              <p class="testimonial__quote">"The personalized dashboard keeps all my trips organized. Love the recommendations!"</p>
+              <p class="testimonial__author">Amira L.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="cta-banner">
+        <div class="container cta-banner__inner">
+          <div>
+            <p class="section__eyebrow">Ready to Start Your Journey?</p>
+            <h3>Sign up today and get access to exclusive deals and personalized recommendations.</h3>
+          </div>
+          <button class="btn btn--primary btn--lg" data-view="register">Create Free Account</button>
+        </div>
+      </section>
     </section>
 
     <!-- ▸ REGISTER ──────────────────────────────── -->
@@ -477,14 +570,30 @@
   ═══════════════════════════════════════════════ -->
   <footer class="footer">
     <div class="container footer__inner">
-      <p class="footer__brand">✈ TravelExplore</p>
-      <nav class="footer__links">
+      <div class="footer__brand-block">
+        <p class="footer__brand">✈ TravelExplore</p>
+        <p class="footer__tagline">Discover the world with confidence and style.</p>
+      </div>
+      <div class="footer__col">
+        <h4>Quick Links</h4>
         <a href="#" data-view="home">Home</a>
         <a href="#" data-view="destinations">Destinations</a>
+        <a href="#" data-view="login">Login</a>
         <a href="#" data-view="contact">Contact</a>
-      </nav>
-      <p class="footer__copy">© 2025 TravelExplore. All rights reserved.</p>
+      </div>
+      <div class="footer__col">
+        <h4>Featured</h4>
+        <span>Bali, Indonesia</span>
+        <span>Paris, France</span>
+        <span>Santorini, Greece</span>
+      </div>
+      <div class="footer__col">
+        <h4>Contact</h4>
+        <span>hello@travelexplore.com</span>
+        <span>+1 (555) 123-4567</span>
+      </div>
     </div>
+    <p class="footer__copy container">© 2026 TravelExplore. All rights reserved.</p>
   </footer>
 
   <!-- Toast -->
