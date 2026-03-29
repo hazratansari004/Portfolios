@@ -243,14 +243,16 @@ const api = {
 
   async _req(url, opts = {}) {
     const res = await fetch(url, opts);
+    const text = await res.text();
+    if (!text) throw new Error(`Empty response from server (status ${res.status}) at ${url}`);
+
     let data;
-    try {
-      const text = await res.text();
-      if (!text) throw new Error('Empty response from server.');
-      data = JSON.parse(text);
-    } catch (err) {
-      throw new Error(err.message || 'Unable to parse server response.');
+    try { data = JSON.parse(text); }
+    catch {
+      const preview = text.slice(0, 120) || 'no content';
+      throw new Error(`Unable to parse server response (status ${res.status}): ${preview}`);
     }
+
     if (!data.success) throw new Error(data.message || `HTTP ${res.status}`);
     return data.data;
   },
