@@ -1,360 +1,1181 @@
 /**
- * main.js — TravelExplore SPA
+ * main.js — TravelExplore Full SPA
  *
- * Responsibilities:
- *  - SPA Router: show/hide <section class="view"> without page reloads
- *  - Auth state: stored in localStorage, nav updates dynamically
- *  - Fetch packages from PHP API and render cards
- *  - Handle login form, show alerts, persist session
- *  - Populate admin packages table
+ * Architecture:
+ *   - Router: navigate() shows/hides <section.view> elements
+ *   - State:  user session & cache stored in memory + localStorage
+ *   - API:    all fetch() calls centralised in api.*  namespace
+ *   - Auth:   Bearer token sent in Authorization header
+ *   - Views:  each view has a dedicated render/load function
  */
 
 'use strict';
 
-// ── Configuration ──────────────────────────────────────────────────────────
-// Update API_BASE to match your server path, e.g. 'http://localhost/travelexplore/backend/api.php'
-const API_BASE = '../backend/api.php';
+/* ════════════════════════════════════════════════════
+   CONFIG
+════════════════════════════════════════════════════ */
+// Adjust to your server path, e.g.:
+// const API = 'http://localhost/travelexplore/backend/api.php';
+const API = '../backend/api.php';
 
-// ── State ──────────────────────────────────────────────────────────────────
+/* ════════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════════ */
 const state = {
-  user: null,          // { id, email, role } or null
-  packages: [],        // cached package list
+  user:        null,   // { id, name, email, role }
+  token:       null,   // auth token string
+  packages:    [],     // cached package list
+  wishlistIds: new Set(),
+  currentPkg:  null,   // package currently being viewed
+  pkgPage:     1,
+  pkgSearch:   '',
 };
 
-// ── DOM references ─────────────────────────────────────────────────────────
-const views        = document.querySelectorAll('.view');
-const navGuest     = document.querySelectorAll('.nav-guest');
-const navUser      = document.querySelectorAll('.nav-user');
-const navAdmin     = document.querySelectorAll('.nav-admin');
-const navAuth      = document.querySelectorAll('.nav-auth');
-const navUserName  = document.getElementById('navUserName');
-const navLinks     = document.getElementById('navLinks');
-const navToggle    = document.getElementById('navToggle');
-const logoutBtn    = document.getElementById('logoutBtn');
-
-const loginForm       = document.getElementById('loginForm');
-const loginEmail      = document.getElementById('loginEmail');
-const loginPassword   = document.getElementById('loginPassword');
-const loginAlert      = document.getElementById('loginAlert');
-const loginSubmit     = document.getElementById('loginSubmit');
-const togglePassword  = document.getElementById('togglePassword');
-
-const packagesGrid    = document.getElementById('packagesGrid');
-const packagesEmpty   = document.getElementById('packagesEmpty');
-const adminPackagesTbody = document.getElementById('adminPackagesTbody');
-const adminPackageCount  = document.getElementById('adminPackageCount');
-
-const toast = document.getElementById('toast');
-
-// ── Utilities ──────────────────────────────────────────────────────────────
-
-/** Format a number as USD currency string */
-function formatPrice(price) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(price);
-}
-
-/** Show a toast message (auto-hides after 3 s) */
-let toastTimer = null;
-function showToast(message, type = 'default') {
-  clearTimeout(toastTimer);
-  toast.textContent = message;
-  toast.className = `toast toast--${type}`;
-  toast.classList.remove('d-none');
-
-  toastTimer = setTimeout(() => {
-    toast.classList.add('d-none');
-  }, 3000);
-}
-
-// ── Router ─────────────────────────────────────────────────────────────────
-
-/**
- * Navigate to a view by name ('home', 'destinations', 'login',
- * 'dashboard', 'admin').
- * Guards unauthorised access and triggers data loading.
- */
-function navigate(viewName) {
-  // Access guards
-  if (viewName === 'dashboard' && (!state.user)) {
-    showToast('Please log in to access your dashboard.', 'error');
-    viewName = 'login';
-  }
-  if (viewName === 'admin' && state.user?.role !== 'admin') {
-    showToast('Admin access required.', 'error');
-    viewName = state.user ? 'dashboard' : 'login';
-  }
-  // If already logged in, skip login page
-  if (viewName === 'login' && state.user) {
-    viewName = state.user.role === 'admin' ? 'admin' : 'dashboard';
-  }
-
-  // Hide all views, show the target
-  views.forEach(v => v.classList.add('d-none'));
-  const target = document.getElementById(`view-${viewName}`);
-  if (target) {
-    target.classList.remove('d-none');
-  }
-
-  // Close mobile nav
-  navLinks.classList.remove('is-open');
-
-  // Trigger view-specific data loads
-  if (viewName === 'destinations') {
-    loadPackages();
-  }
-  if (viewName === 'admin') {
-    loadPackages(true);  // force-refresh for admin
-  }
-
-  // Scroll to top
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// ── Auth / Session ─────────────────────────────────────────────────────────
-
+/* ════════════════════════════════════════════════════
+   SESSION PERSISTENCE
+════════════════════════════════════════════════════ */
 function loadSession() {
   try {
-    const stored = localStorage.getItem('te_user');
-    if (stored) {
-      state.user = JSON.parse(stored);
+    const raw = localStorage.getItem('te_session');
+    if (raw) {
+      const s = JSON.parse(raw);
+      state.user  = s.user  || null;
+      state.token = s.token || null;
     }
-  } catch {
-    state.user = null;
-  }
+  } catch { /* ignore */ }
 }
 
-function saveSession(user) {
-  state.user = user;
-  localStorage.setItem('te_user', JSON.stringify(user));
+function saveSession(user, token) {
+  state.user  = user;
+  state.token = token;
+  localStorage.setItem('te_session', JSON.stringify({ user, token }));
 }
 
 function clearSession() {
-  state.user = null;
-  localStorage.removeItem('te_user');
+  state.user  = null;
+  state.token = null;
+  localStorage.removeItem('te_session');
 }
 
-function updateNav() {
-  const isLoggedIn = Boolean(state.user);
-  const isAdmin    = state.user?.role === 'admin';
+/* ════════════════════════════════════════════════════
+   API LAYER
+════════════════════════════════════════════════════ */
+const api = {
+  _headers(withAuth = false) {
+    const h = { 'Content-Type': 'application/json' };
+    if (withAuth && state.token) h['Authorization'] = `Bearer ${state.token}`;
+    return h;
+  },
 
-  // Guest nav items
-  navGuest.forEach(el => el.classList.toggle('d-none', isLoggedIn));
-  // User-only nav items
-  navUser.forEach(el  => el.classList.toggle('d-none', !(isLoggedIn && !isAdmin)));
-  // Admin-only nav items
-  navAdmin.forEach(el => el.classList.toggle('d-none', !isAdmin));
-  // Shared auth items (username + logout)
-  navAuth.forEach(el  => el.classList.toggle('d-none', !isLoggedIn));
+  async _req(url, opts = {}) {
+    const res  = await fetch(url, opts);
+    const json = await res.json();
+    if (!json.success) throw new Error(json.message || `HTTP ${res.status}`);
+    return json.data;
+  },
 
-  if (isLoggedIn) {
-    navUserName.textContent = state.user.email.split('@')[0];
+  register(name, email, password) {
+    return this._req(`${API}?action=register`, {
+      method:  'POST',
+      headers: this._headers(),
+      body:    JSON.stringify({ name, email, password }),
+    });
+  },
+
+  login(email, password) {
+    return this._req(`${API}?action=login`, {
+      method:  'POST',
+      headers: this._headers(),
+      body:    JSON.stringify({ email, password }),
+    });
+  },
+
+  logout() {
+    return this._req(`${API}?action=logout`, {
+      method:  'POST',
+      headers: this._headers(true),
+    });
+  },
+
+  getPackages(search = '', page = 1) {
+    const qs = new URLSearchParams({ action: 'packages', page });
+    if (search) qs.set('search', search);
+    return this._req(`${API}?${qs}`);
+  },
+
+  getPackage(id) {
+    return this._req(`${API}?action=package&id=${id}`);
+  },
+
+  createPackage(data) {
+    return this._req(`${API}?action=packages`, {
+      method:  'POST',
+      headers: this._headers(true),
+      body:    JSON.stringify(data),
+    });
+  },
+
+  updatePackage(id, data) {
+    return this._req(`${API}?action=package&id=${id}`, {
+      method:  'PUT',
+      headers: this._headers(true),
+      body:    JSON.stringify(data),
+    });
+  },
+
+  deletePackage(id) {
+    return this._req(`${API}?action=package&id=${id}`, {
+      method:  'DELETE',
+      headers: this._headers(true),
+    });
+  },
+
+  book(packageId, travelDate, persons) {
+    return this._req(`${API}?action=book`, {
+      method:  'POST',
+      headers: this._headers(true),
+      body:    JSON.stringify({ package_id: packageId, travel_date: travelDate, persons }),
+    });
+  },
+
+  myBookings() {
+    return this._req(`${API}?action=my_bookings`, { headers: this._headers(true) });
+  },
+
+  allBookings() {
+    return this._req(`${API}?action=all_bookings`, { headers: this._headers(true) });
+  },
+
+  updateBookingStatus(id, status) {
+    return this._req(`${API}?action=update_booking_status`, {
+      method:  'POST',
+      headers: this._headers(true),
+      body:    JSON.stringify({ id, status }),
+    });
+  },
+
+  toggleWishlist(packageId) {
+    return this._req(`${API}?action=wishlist`, {
+      method:  'POST',
+      headers: this._headers(true),
+      body:    JSON.stringify({ package_id: packageId }),
+    });
+  },
+
+  myWishlist() {
+    return this._req(`${API}?action=my_wishlist`, { headers: this._headers(true) });
+  },
+
+  submitReview(packageId, rating, comment) {
+    return this._req(`${API}?action=review`, {
+      method:  'POST',
+      headers: this._headers(true),
+      body:    JSON.stringify({ package_id: packageId, rating, comment }),
+    });
+  },
+
+  adminStats() {
+    return this._req(`${API}?action=admin_stats`, { headers: this._headers(true) });
+  },
+
+  allUsers() {
+    return this._req(`${API}?action=all_users`, { headers: this._headers(true) });
+  },
+
+  allInquiries() {
+    return this._req(`${API}?action=all_inquiries`, { headers: this._headers(true) });
+  },
+
+  submitInquiry(name, email, subject, message) {
+    return this._req(`${API}?action=inquiry`, {
+      method:  'POST',
+      headers: this._headers(),
+      body:    JSON.stringify({ name, email, subject, message }),
+    });
+  },
+};
+
+/* ════════════════════════════════════════════════════
+   UTILITIES
+════════════════════════════════════════════════════ */
+function esc(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+function fmt(price) {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(price);
+}
+
+function fmtDate(d) {
+  // Parse YYYY-MM-DD without timezone shift by splitting the string
+  const [year, month, day] = d.split('-').map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function stars(rating, max = 5) {
+  const n = Math.round(Number(rating));
+  return '★'.repeat(n) + '☆'.repeat(max - n);
+}
+
+let _toastTimer = null;
+function toast(msg, type = 'default') {
+  clearTimeout(_toastTimer);
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast toast--${type}`;
+  el.classList.remove('d-none');
+  _toastTimer = setTimeout(() => el.classList.add('d-none'), 3500);
+}
+
+function setLoading(btnEl, loading, text) {
+  if (!btnEl) return;
+  btnEl.disabled = loading;
+  if (text) btnEl.textContent = loading ? `${text}…` : text;
+}
+
+function showAlert(el, msg, type = 'error') {
+  if (!el) return;
+  el.textContent = msg;
+  el.className   = `form-alert form-alert--${type}`;
+  el.classList.remove('d-none');
+}
+
+function hideAlert(el) {
+  if (el) el.classList.add('d-none');
+}
+
+/* ════════════════════════════════════════════════════
+   ROUTER
+════════════════════════════════════════════════════ */
+function navigate(viewName) {
+  // Guards
+  if (['dashboard', 'wishlist'].includes(viewName) && !state.user) {
+    toast('Please log in first.', 'error');
+    viewName = 'login';
+  }
+  if (viewName === 'admin' && state.user?.role !== 'admin') {
+    toast('Admin access required.', 'error');
+    viewName = state.user ? 'dashboard' : 'login';
+  }
+  if (viewName === 'login' && state.user)  { viewName = state.user.role === 'admin' ? 'admin' : 'dashboard'; }
+  if (viewName === 'register' && state.user) { viewName = state.user.role === 'admin' ? 'admin' : 'dashboard'; }
+
+  document.querySelectorAll('.view').forEach(v => v.classList.add('d-none'));
+  const target = document.getElementById(`view-${viewName}`);
+  if (target) target.classList.remove('d-none');
+
+  document.getElementById('navLinks').classList.remove('is-open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Trigger data loading
+  switch (viewName) {
+    case 'destinations':   loadDestinations(); break;
+    case 'dashboard':      loadDashboard();    break;
+    case 'wishlist':       loadWishlistView(); break;
+    case 'admin':          loadAdmin();        break;
   }
 }
 
-// ── API Calls ──────────────────────────────────────────────────────────────
+/* ════════════════════════════════════════════════════
+   NAV UPDATE
+════════════════════════════════════════════════════ */
+function updateNav() {
+  const loggedIn = Boolean(state.user);
+  const isAdmin  = state.user?.role === 'admin';
 
-async function fetchPackages() {
-  const res  = await fetch(`${API_BASE}?action=packages`);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = await res.json();
-  if (!json.success) throw new Error(json.message || 'Unknown error');
-  return json.data;
+  document.querySelectorAll('.nav-guest').forEach(el => el.classList.toggle('d-none', loggedIn));
+  document.querySelectorAll('.nav-user').forEach(el  => el.classList.toggle('d-none', !(loggedIn && !isAdmin)));
+  document.querySelectorAll('.nav-admin').forEach(el => el.classList.toggle('d-none', !isAdmin));
+  document.querySelectorAll('.nav-auth').forEach(el  => el.classList.toggle('d-none', !loggedIn));
+
+  const greet = document.getElementById('navGreeting');
+  if (greet && state.user) greet.textContent = `Hi, ${state.user.name.split(' ')[0]}`;
 }
 
-async function fetchLogin(email, password) {
-  const res  = await fetch(`${API_BASE}?action=login`, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ email, password }),
-  });
-  const json = await res.json();
-  if (!json.success) throw new Error(json.message || 'Login failed');
-  return json.data;
+/* ════════════════════════════════════════════════════
+   DESTINATIONS VIEW
+════════════════════════════════════════════════════ */
+async function loadDestinations() {
+  const grid  = document.getElementById('packagesGrid');
+  const empty = document.getElementById('packagesEmpty');
+  const label = document.getElementById('searchLabel');
+  const pgn   = document.getElementById('pagination');
+
+  grid.innerHTML  = Array(6).fill('<div class="skeleton-card"></div>').join('');
+  empty.classList.add('d-none');
+  if (pgn) pgn.innerHTML = '';
+
+  try {
+    const result = await api.getPackages(state.pkgSearch, state.pkgPage);
+    state.packages = result.packages;
+
+    // Show search label
+    if (state.pkgSearch && label) {
+      label.textContent = `Showing ${result.total} result${result.total !== 1 ? 's' : ''} for "${state.pkgSearch}"`;
+      label.classList.remove('d-none');
+    } else if (label) {
+      label.classList.add('d-none');
+    }
+
+    grid.innerHTML = '';
+    if (!result.packages.length) {
+      empty.classList.remove('d-none');
+      return;
+    }
+    result.packages.forEach(pkg => {
+      grid.insertAdjacentHTML('beforeend', renderPkgCard(pkg));
+    });
+
+    // Pagination
+    if (result.pages > 1 && pgn) {
+      renderPagination(result.page, result.pages, pgn);
+    }
+  } catch (err) {
+    grid.innerHTML = '';
+    empty.classList.remove('d-none');
+    toast('Could not load packages. Is the backend running?', 'error');
+  }
 }
 
-// ── Rendering ──────────────────────────────────────────────────────────────
-
-function renderPackageCard(pkg) {
+function renderPkgCard(pkg) {
+  const wishlisted = state.wishlistIds.has(Number(pkg.id));
+  const avgStars   = pkg.avg_rating ? stars(pkg.avg_rating) : '';
   return `
     <article class="pkg-card">
       <div class="pkg-card__img-wrap">
-        <img
-          class="pkg-card__img"
-          src="${escHtml(pkg.image_url)}"
-          alt="${escHtml(pkg.title)}"
-          loading="lazy"
-          onerror="this.src='https://images.unsplash.com/photo-1488085061387-422e29b40080?w=800&q=80'"
-        />
+        <img class="pkg-card__img" src="${esc(pkg.image_url)}" alt="${esc(pkg.title)}" loading="lazy"
+             onerror="this.src='https://images.unsplash.com/photo-1488085061387-422e29b40080?w=800&q=80'" />
         <span class="pkg-card__badge">Featured</span>
+        <button class="pkg-card__wishlist-btn ${wishlisted ? 'is-wishlisted' : ''}"
+                title="${wishlisted ? 'Remove from wishlist' : 'Save to wishlist'}"
+                onclick="handleWishlistToggle(${Number(pkg.id)}, this)">
+          ${wishlisted ? '❤️' : '🤍'}
+        </button>
       </div>
       <div class="pkg-card__body">
-        <h3 class="pkg-card__title">${escHtml(pkg.title)}</h3>
-        <p class="pkg-card__desc">${escHtml(pkg.description)}</p>
+        <div class="pkg-card__meta">
+          <span>📍 ${esc(pkg.location || '—')}</span>
+          <span>🕒 ${esc(pkg.duration || '—')}</span>
+          ${avgStars ? `<span class="pkg-card__stars">${avgStars}</span>` : ''}
+        </div>
+        <h3 class="pkg-card__title">${esc(pkg.title)}</h3>
+        <p class="pkg-card__desc">${esc(pkg.description)}</p>
         <div class="pkg-card__footer">
-          <div class="pkg-card__price">
-            ${formatPrice(pkg.price)} <span>/ person</span>
-          </div>
-          <button
-            class="btn btn--primary btn--sm"
-            onclick="handleBookNow(${Number(pkg.id)}, '${escHtml(pkg.title)}')"
-          >
-            Book Now
-          </button>
+          <div class="pkg-card__price">${fmt(pkg.price)} <span>/ person</span></div>
+          <button class="btn btn--primary btn--sm" onclick="openPackageDetail(${Number(pkg.id)})">View Details</button>
         </div>
       </div>
     </article>
   `;
 }
 
-function renderAdminRow(pkg) {
+function renderPagination(current, total, container) {
+  container.innerHTML = '';
+  for (let i = 1; i <= total; i++) {
+    const btn = document.createElement('button');
+    btn.className = `page-btn${i === current ? ' page-btn--active' : ''}`;
+    btn.textContent = i;
+    btn.addEventListener('click', () => {
+      state.pkgPage = i;
+      loadDestinations();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    container.appendChild(btn);
+  }
+}
+
+async function openPackageDetail(id) {
+  navigate('package-detail');
+  const content = document.getElementById('pkgDetailContent');
+  content.innerHTML = '<div class="loading-spinner" style="padding:4rem">Loading…</div>';
+
+  try {
+    const pkg = await api.getPackage(id);
+    state.currentPkg = pkg;
+    content.innerHTML = renderPkgDetail(pkg);
+    initBookingCard(pkg);
+  } catch (err) {
+    content.innerHTML = `<div class="empty-state"><p>${esc(err.message)}</p></div>`;
+  }
+}
+window.openPackageDetail = openPackageDetail;
+
+function renderPkgDetail(pkg) {
+  const dates = Array.isArray(pkg.available_dates) ? pkg.available_dates : [];
+  const reviewsHtml = pkg.reviews && pkg.reviews.length
+    ? pkg.reviews.map(r => `
+        <div class="review-card">
+          <div class="review-card__header">
+            <span class="review-card__author">${esc(r.user_name)}</span>
+            <span class="review-card__date">${new Date(r.created_at).toLocaleDateString()}</span>
+          </div>
+          <div class="review-card__stars">${stars(r.rating)}</div>
+          <p class="review-card__text">${esc(r.comment)}</p>
+        </div>`).join('')
+    : '<p class="text-muted text-sm">No reviews yet. Be the first!</p>';
+
   return `
-    <tr>
-      <td>${Number(pkg.id)}</td>
-      <td>
-        <img
-          src="${escHtml(pkg.image_url)}"
-          alt="${escHtml(pkg.title)}"
-          loading="lazy"
-          onerror="this.src='https://images.unsplash.com/photo-1488085061387-422e29b40080?w=800&q=80'"
-        />
-      </td>
-      <td>
-        <strong>${escHtml(pkg.title)}</strong><br>
-        <span class="text-muted text-sm">${formatPrice(pkg.price)} / person</span>
-      </td>
-      <td>${formatPrice(pkg.price)}</td>
-      <td>
-        <div class="table-actions">
-          <button class="btn btn--outline btn--sm">Edit</button>
-          <button class="btn btn--danger btn--sm">Delete</button>
+    <div class="pkg-detail-hero">
+      <img src="${esc(pkg.image_url)}" alt="${esc(pkg.title)}"
+           onerror="this.src='https://images.unsplash.com/photo-1488085061387-422e29b40080?w=800&q=80'" />
+      <div class="pkg-detail-hero__overlay"></div>
+      <div class="pkg-detail-hero__content">
+        <h1>${esc(pkg.title)}</h1>
+        <div class="pkg-detail-meta">
+          <span class="pkg-detail-meta__item">📍 ${esc(pkg.location)}</span>
+          <span class="pkg-detail-meta__item">🕒 ${esc(pkg.duration)}</span>
+          <span class="pkg-detail-meta__item">👥 Max ${esc(pkg.max_persons)} persons</span>
+          ${pkg.avg_rating > 0 ? `<span class="pkg-detail-meta__item">⭐ ${pkg.avg_rating} (${pkg.review_count} reviews)</span>` : ''}
         </div>
-      </td>
-    </tr>
+      </div>
+    </div>
+
+    <div class="container py-10">
+      <div class="pkg-detail-grid">
+        <!-- Left: description + reviews -->
+        <div>
+          <h2 style="font-size:1.5rem;font-weight:700;margin-bottom:1rem;">About This Package</h2>
+          <p class="pkg-detail-desc">${esc(pkg.description)}</p>
+
+          ${pkg.avg_rating > 0 ? `
+          <div class="avg-rating">
+            <span class="avg-rating__score">${pkg.avg_rating}</span>
+            <span class="avg-rating__stars">${stars(pkg.avg_rating)}</span>
+            <span class="avg-rating__count">${pkg.review_count} review${pkg.review_count !== 1 ? 's' : ''}</span>
+          </div>` : ''}
+
+          <div class="reviews-section">
+            <h3>Traveller Reviews</h3>
+            ${reviewsHtml}
+          </div>
+
+          <!-- Review form for logged-in users -->
+          ${state.user && state.user.role !== 'admin' ? `
+          <div class="review-form" id="reviewFormWrapper">
+            <h4>Write a Review</h4>
+            <div class="star-rating" id="starRating">
+              ${[1,2,3,4,5].map(n => `<button type="button" class="star-btn" data-val="${n}" onclick="setReviewStar(${n})">★</button>`).join('')}
+            </div>
+            <textarea id="reviewComment" class="form-input form-textarea" rows="3" placeholder="Share your experience…"></textarea>
+            <div class="form-alert d-none" id="reviewAlert"></div>
+            <button class="btn btn--primary btn--sm mt-4" id="submitReviewBtn" onclick="submitReview(${Number(pkg.id)})">Submit Review</button>
+          </div>` : ''}
+        </div>
+
+        <!-- Right: booking card -->
+        <div>
+          <div class="booking-card">
+            <div class="booking-card__price">${fmt(pkg.price)} <span>/ person</span></div>
+            <h4>Select Date</h4>
+            ${dates.length ? `
+            <div class="date-grid" id="dateGrid">
+              ${dates.map(d => `<button type="button" class="date-btn" data-date="${esc(d)}" onclick="selectDate(this)">${fmtDate(d)}</button>`).join('')}
+            </div>` : '<p class="text-sm text-muted mb-4">No fixed dates — contact us.</p>'}
+
+            <div class="form-group">
+              <label class="form-label" for="personCount">Number of Persons</label>
+              <input type="number" id="personCount" class="form-input" value="1" min="1" max="${esc(pkg.max_persons)}" />
+            </div>
+
+            <div class="booking-total">
+              <span>Total</span>
+              <strong id="bookingTotal">${fmt(pkg.price)}</strong>
+            </div>
+
+            <button class="btn btn--primary btn--full mt-4" id="confirmBookingBtn" onclick="confirmBooking(${Number(pkg.id)})">
+              ${state.user ? 'Confirm Booking' : 'Login to Book'}
+            </button>
+            ${state.user ? '' : '<p class="text-sm text-muted text-center mt-2">You need an account to book.</p>'}
+
+            <button class="btn btn--outline btn--full mt-4" onclick="handleWishlistToggle(${Number(pkg.id)}, null, true)" id="detailWishlistBtn">
+              ${state.wishlistIds.has(Number(pkg.id)) ? '❤️ Remove from Wishlist' : '🤍 Save to Wishlist'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   `;
 }
 
-/** Simple HTML-escape to prevent XSS */
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+let selectedDate = null;
+let selectedStarVal = 0;
+
+function initBookingCard(pkg) {
+  selectedDate = null;
+
+  const personInput = document.getElementById('personCount');
+  const totalEl     = document.getElementById('bookingTotal');
+  if (!personInput || !totalEl) return;
+
+  function updateTotal() {
+    const persons = Math.max(1, parseInt(personInput.value) || 1);
+    totalEl.textContent = fmt(pkg.price * persons);
+  }
+
+  personInput.addEventListener('input', updateTotal);
 }
 
-async function loadPackages(forceAdmin = false) {
-  // Show skeletons while loading (destinations view only)
-  if (!forceAdmin) {
-    packagesGrid.innerHTML = '';
-    for (let i = 0; i < 6; i++) {
-      packagesGrid.insertAdjacentHTML('beforeend', '<div class="skeleton-card"></div>');
-    }
-    packagesEmpty.classList.add('d-none');
+window.selectDate = function(btn) {
+  document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedDate = btn.dataset.date;
+};
+
+window.setReviewStar = function(val) {
+  selectedStarVal = val;
+  document.querySelectorAll('.star-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i < val);
+  });
+};
+
+async function confirmBooking(pkgId) {
+  if (!state.user) { navigate('login'); return; }
+
+  const personInput = document.getElementById('personCount');
+  const persons     = Math.max(1, parseInt(personInput?.value) || 1);
+  const pkg         = state.currentPkg;
+
+  if (!selectedDate && pkg.available_dates && pkg.available_dates.length > 0) {
+    toast('Please select a travel date.', 'error'); return;
   }
+
+  const MS_PER_DAY = 24 * 60 * 60 * 1000;
+  const travelDate = selectedDate || new Date(Date.now() + 30 * MS_PER_DAY).toISOString().split('T')[0];
+
+  const btn = document.getElementById('confirmBookingBtn');
+  setLoading(btn, true, 'Confirm Booking');
 
   try {
-    const packages = await fetchPackages();
-    state.packages  = packages;
+    await api.book(pkgId, travelDate, persons);
+    toast(`Booking confirmed! Check your dashboard for details.`, 'success');
+    btn.textContent = '✅ Booked!';
+    btn.disabled    = true;
+  } catch (err) {
+    toast(err.message, 'error');
+    setLoading(btn, false, 'Confirm Booking');
+  }
+}
+window.confirmBooking = confirmBooking;
 
-    // Destinations grid
-    if (!forceAdmin) {
-      packagesGrid.innerHTML = '';
-      if (packages.length === 0) {
-        packagesEmpty.classList.remove('d-none');
-      } else {
-        packages.forEach(pkg => {
-          packagesGrid.insertAdjacentHTML('beforeend', renderPackageCard(pkg));
-        });
-      }
+async function submitReview(pkgId) {
+  if (!state.user) { navigate('login'); return; }
+
+  const comment   = document.getElementById('reviewComment')?.value.trim();
+  const alertEl   = document.getElementById('reviewAlert');
+  const submitBtn = document.getElementById('submitReviewBtn');
+
+  if (!selectedStarVal) { showAlert(alertEl, 'Please select a star rating.'); return; }
+  if (!comment)         { showAlert(alertEl, 'Please write a comment.');        return; }
+  hideAlert(alertEl);
+
+  setLoading(submitBtn, true, 'Submit Review');
+  try {
+    await api.submitReview(pkgId, selectedStarVal, comment);
+    toast('Review submitted! Thank you.', 'success');
+    // Refresh detail
+    openPackageDetail(pkgId);
+  } catch (err) {
+    showAlert(alertEl, err.message);
+    setLoading(submitBtn, false, 'Submit Review');
+  }
+}
+window.submitReview = submitReview;
+
+/* ════════════════════════════════════════════════════
+   WISHLIST
+════════════════════════════════════════════════════ */
+async function loadWishlistIds() {
+  if (!state.user || state.user.role === 'admin') return;
+  try {
+    const data = await api.myWishlist();
+    state.wishlistIds = new Set(data.wishlist.map(w => Number(w.id)));
+    // Update nav badge
+    const badge = document.getElementById('navWishlistCount');
+    if (badge) badge.textContent = state.wishlistIds.size || '';
+  } catch { /* ignore */ }
+}
+
+async function handleWishlistToggle(pkgId, btnEl, fromDetail = false) {
+  if (!state.user) { toast('Please log in to save packages.', 'error'); navigate('login'); return; }
+  if (state.user.role === 'admin') { toast('Admins cannot use the wishlist.', 'warning'); return; }
+
+  try {
+    const data = await api.toggleWishlist(pkgId);
+    if (data.wishlisted) {
+      state.wishlistIds.add(pkgId);
+      toast('Added to wishlist! ❤️', 'success');
+    } else {
+      state.wishlistIds.delete(pkgId);
+      toast('Removed from wishlist.', 'default');
     }
 
-    // Admin table
-    if (forceAdmin || state.packages.length) {
-      if (adminPackagesTbody) {
-        adminPackagesTbody.innerHTML = packages.map(renderAdminRow).join('');
-      }
-      if (adminPackageCount) {
-        adminPackageCount.textContent = packages.length;
-      }
+    // Update badge
+    const badge = document.getElementById('navWishlistCount');
+    if (badge) badge.textContent = state.wishlistIds.size || '';
+
+    // Update card button
+    if (btnEl) {
+      btnEl.classList.toggle('is-wishlisted', data.wishlisted);
+      btnEl.textContent = data.wishlisted ? '❤️' : '🤍';
+      btnEl.title       = data.wishlisted ? 'Remove from wishlist' : 'Save to wishlist';
+    }
+
+    // Update detail page button
+    if (fromDetail) {
+      const detailBtn = document.getElementById('detailWishlistBtn');
+      if (detailBtn) detailBtn.textContent = data.wishlisted ? '❤️ Remove from Wishlist' : '🤍 Save to Wishlist';
     }
   } catch (err) {
-    console.error('Failed to load packages:', err);
-    if (!forceAdmin) {
-      packagesGrid.innerHTML = '';
-      packagesEmpty.classList.remove('d-none');
+    toast(err.message, 'error');
+  }
+}
+window.handleWishlistToggle = handleWishlistToggle;
+
+async function loadWishlistView() {
+  const container = document.getElementById('wishlistGrid');
+  if (!container) return;
+  container.innerHTML = '<div class="loading-spinner">Loading…</div>';
+
+  try {
+    const data = await api.myWishlist();
+    if (!data.wishlist.length) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <span class="empty-state__icon">🤍</span>
+          <p>Your wishlist is empty.</p>
+          <button class="btn btn--primary mt-4" data-view="destinations">Browse Packages</button>
+        </div>`;
+      return;
     }
-    showToast('Could not load packages. Is the PHP server running?', 'error');
+    container.innerHTML = `<div class="packages-grid">${data.wishlist.map(pkg => renderPkgCard(pkg)).join('')}</div>`;
+  } catch (err) {
+    container.innerHTML = `<div class="empty-state"><p>${esc(err.message)}</p></div>`;
   }
 }
 
-// ── Event Handlers ─────────────────────────────────────────────────────────
+/* ════════════════════════════════════════════════════
+   USER DASHBOARD
+════════════════════════════════════════════════════ */
+async function loadDashboard() {
+  const greet = document.getElementById('dashboardGreeting');
+  if (greet && state.user) greet.textContent = `Welcome back, ${state.user.name}!`;
 
-function handleBookNow(pkgId, pkgTitle) {
-  if (!state.user) {
-    showToast('Please log in to book a package.', 'error');
-    navigate('login');
-    return;
-  }
-  showToast(`"${pkgTitle}" booking coming soon!`, 'success');
+  loadBookingHistory();
+  loadWishlistTab();
 }
-// Expose for inline onclick
-window.handleBookNow = handleBookNow;
 
-loginForm.addEventListener('submit', async (e) => {
+async function loadBookingHistory() {
+  const container = document.getElementById('bookingsList');
+  if (!container) return;
+  container.innerHTML = '<div class="loading-spinner">Loading bookings…</div>';
+
+  try {
+    const data = await api.myBookings();
+    if (!data.bookings.length) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <span class="empty-state__icon">📋</span>
+          <p>You haven't made any bookings yet.</p>
+          <button class="btn btn--primary mt-4" data-view="destinations">Browse Packages</button>
+        </div>`;
+      return;
+    }
+    container.innerHTML = data.bookings.map(b => `
+      <div class="booking-history-card">
+        <img src="${esc(b.image_url)}" alt="${esc(b.title)}"
+             onerror="this.src='https://images.unsplash.com/photo-1488085061387-422e29b40080?w=800&q=80'" />
+        <div class="booking-history-card__info">
+          <div class="booking-history-card__title">${esc(b.title)}</div>
+          <div class="booking-history-card__meta">
+            <span>📍 ${esc(b.location)}</span>
+            <span>📅 ${fmtDate(b.travel_date)}</span>
+            <span>👥 ${esc(b.persons)} person${b.persons > 1 ? 's' : ''}</span>
+            <span>🕒 ${esc(b.duration)}</span>
+          </div>
+          <div class="booking-history-card__footer">
+            <span class="booking-history-card__price">${fmt(b.total_price)}</span>
+            <span class="badge badge--${esc(b.status)}">${esc(b.status)}</span>
+          </div>
+        </div>
+      </div>`).join('');
+  } catch (err) {
+    container.innerHTML = `<div class="empty-state"><p>${esc(err.message)}</p></div>`;
+  }
+}
+
+async function loadWishlistTab() {
+  const container = document.getElementById('wishlistContent');
+  if (!container) return;
+  container.innerHTML = '<div class="loading-spinner">Loading wishlist…</div>';
+
+  try {
+    const data = await api.myWishlist();
+    if (!data.wishlist.length) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <span class="empty-state__icon">🤍</span>
+          <p>No saved packages yet.</p>
+          <button class="btn btn--primary mt-4" data-view="destinations">Explore Packages</button>
+        </div>`;
+      return;
+    }
+    container.innerHTML = `<div class="packages-grid">${data.wishlist.map(pkg => renderPkgCard(pkg)).join('')}</div>`;
+  } catch (err) {
+    container.innerHTML = `<div class="empty-state"><p>${esc(err.message)}</p></div>`;
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   ADMIN PANEL
+════════════════════════════════════════════════════ */
+async function loadAdmin() {
+  loadAdminStats();
+  loadAdminPackages();
+  loadAdminBookings();
+  loadAdminUsers();
+  loadAdminInquiries();
+}
+
+async function loadAdminStats() {
+  try {
+    const s = await api.adminStats();
+    document.getElementById('stat-packages').textContent = s.packages;
+    document.getElementById('stat-users').textContent    = s.users;
+    document.getElementById('stat-bookings').textContent = s.bookings;
+    document.getElementById('stat-revenue').textContent  = fmt(s.revenue);
+  } catch { /* ignore */ }
+}
+
+async function loadAdminPackages() {
+  const tbody = document.getElementById('adminPkgTbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Loading…</td></tr>';
+
+  try {
+    const data = await api.getPackages('', 1);
+    // Load all pages if needed — for demo just grab page 1
+    if (!data.packages.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No packages found.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.packages.map(p => `
+      <tr>
+        <td>${Number(p.id)}</td>
+        <td><img src="${esc(p.image_url)}" alt="${esc(p.title)}"
+                 onerror="this.src='https://images.unsplash.com/photo-1488085061387-422e29b40080?w=200&q=60'" /></td>
+        <td><strong>${esc(p.title)}</strong><br><span class="text-muted text-sm">${esc(p.location)}</span></td>
+        <td>${esc(p.location)}</td>
+        <td>${fmt(p.price)}</td>
+        <td>${Array.isArray(p.available_dates) ? p.available_dates.length : 0} dates</td>
+        <td>
+          <div class="table-actions">
+            <button class="btn btn--outline btn--sm" onclick="adminEditPackage(${Number(p.id)})">Edit</button>
+            <button class="btn btn--danger btn--sm"  onclick="adminDeletePackage(${Number(p.id)}, '${esc(p.title)}')">Delete</button>
+          </div>
+        </td>
+      </tr>`).join('');
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">${esc(err.message)}</td></tr>`;
+  }
+}
+
+async function loadAdminBookings() {
+  const tbody = document.getElementById('adminBookingsTbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Loading…</td></tr>';
+
+  try {
+    const data = await api.allBookings();
+    if (!data.bookings.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">No bookings yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.bookings.map(b => `
+      <tr>
+        <td>${Number(b.id)}</td>
+        <td>${esc(b.user_name)}<br><span class="text-muted text-sm">${esc(b.user_email)}</span></td>
+        <td>${esc(b.package_title)}<br><span class="text-muted text-sm">${esc(b.location)}</span></td>
+        <td>${fmtDate(b.travel_date)}</td>
+        <td>${esc(b.persons)}</td>
+        <td>${fmt(b.total_price)}</td>
+        <td><span class="badge badge--${esc(b.status)}">${esc(b.status)}</span></td>
+        <td>
+          <select class="form-input" style="padding:.25rem .5rem;font-size:.78rem"
+                  onchange="adminUpdateBooking(${Number(b.id)}, this.value)">
+            <option value="pending"   ${b.status==='pending'   ?'selected':''}>Pending</option>
+            <option value="confirmed" ${b.status==='confirmed' ?'selected':''}>Confirmed</option>
+            <option value="cancelled" ${b.status==='cancelled' ?'selected':''}>Cancelled</option>
+          </select>
+        </td>
+      </tr>`).join('');
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">${esc(err.message)}</td></tr>`;
+  }
+}
+
+async function loadAdminUsers() {
+  const tbody = document.getElementById('adminUsersTbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Loading…</td></tr>';
+
+  try {
+    const data = await api.allUsers();
+    tbody.innerHTML = data.users.map(u => `
+      <tr>
+        <td>${Number(u.id)}</td>
+        <td>${esc(u.name)}</td>
+        <td>${esc(u.email)}</td>
+        <td><span class="badge badge--${esc(u.role)}">${esc(u.role)}</span></td>
+        <td>${new Date(u.created_at).toLocaleDateString()}</td>
+      </tr>`).join('');
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">${esc(err.message)}</td></tr>`;
+  }
+}
+
+async function loadAdminInquiries() {
+  const tbody = document.getElementById('adminInquiriesTbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Loading…</td></tr>';
+
+  try {
+    const data = await api.allInquiries();
+    if (!data.inquiries.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No inquiries yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.inquiries.map(i => `
+      <tr>
+        <td>${Number(i.id)}</td>
+        <td>${esc(i.name)}</td>
+        <td>${esc(i.email)}</td>
+        <td>${esc(i.subject)}</td>
+        <td>${new Date(i.created_at).toLocaleDateString()}</td>
+        <td><span class="badge badge--${i.status==='new'?'pending':'confirmed'}">${esc(i.status)}</span></td>
+      </tr>`).join('');
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">${esc(err.message)}</td></tr>`;
+  }
+}
+
+// Admin: update booking status
+window.adminUpdateBooking = async function(id, status) {
+  try {
+    await api.updateBookingStatus(id, status);
+    toast('Booking status updated.', 'success');
+    loadAdminBookings();
+    loadAdminStats();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+};
+
+// Admin: edit package (pre-fill modal)
+window.adminEditPackage = async function(id) {
+  try {
+    const pkg = await api.getPackage(id);
+    document.getElementById('pkgModalTitle').textContent = 'Edit Package';
+    document.getElementById('pkgFormId').value        = pkg.id;
+    document.getElementById('pkgTitle').value         = pkg.title;
+    document.getElementById('pkgLocation').value      = pkg.location;
+    document.getElementById('pkgDescription').value   = pkg.description;
+    document.getElementById('pkgPrice').value         = pkg.price;
+    document.getElementById('pkgDuration').value      = pkg.duration;
+    document.getElementById('pkgMaxPersons').value    = pkg.max_persons;
+    document.getElementById('pkgImageUrl').value      = pkg.image_url;
+    document.getElementById('pkgDates').value         = Array.isArray(pkg.available_dates) ? pkg.available_dates.join(', ') : '';
+    document.getElementById('pkgFormSubmit').textContent = 'Update Package';
+    openPkgModal();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+};
+
+// Admin: delete package
+window.adminDeletePackage = async function(id, title) {
+  if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+  try {
+    await api.deletePackage(id);
+    toast('Package deleted.', 'success');
+    loadAdminPackages();
+    loadAdminStats();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+};
+
+/* ════════════════════════════════════════════════════
+   PACKAGE MODAL
+════════════════════════════════════════════════════ */
+function openPkgModal() {
+  document.getElementById('pkgModal').classList.remove('d-none');
+  document.getElementById('pkgTitle').focus();
+}
+
+function closePkgModal() {
+  document.getElementById('pkgModal').classList.add('d-none');
+  document.getElementById('pkgForm').reset();
+  document.getElementById('pkgFormId').value = '';
+  document.getElementById('pkgModalTitle').textContent = 'Add Package';
+  document.getElementById('pkgFormSubmit').textContent = 'Save Package';
+  hideAlert(document.getElementById('pkgFormAlert'));
+}
+
+document.getElementById('addPackageBtn')?.addEventListener('click', () => {
+  closePkgModal(); // reset first
+  openPkgModal();
+});
+document.getElementById('pkgModalClose')?.addEventListener('click', closePkgModal);
+document.getElementById('pkgFormCancel')?.addEventListener('click', closePkgModal);
+document.getElementById('pkgModal')?.addEventListener('click', e => {
+  if (e.target === document.getElementById('pkgModal')) closePkgModal();
+});
+
+document.getElementById('pkgForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
+  const alertEl = document.getElementById('pkgFormAlert');
+  const submitBtn = document.getElementById('pkgFormSubmit');
+  hideAlert(alertEl);
 
-  const email    = loginEmail.value.trim();
-  const password = loginPassword.value;
+  const id           = document.getElementById('pkgFormId').value;
+  const title        = document.getElementById('pkgTitle').value.trim();
+  const location     = document.getElementById('pkgLocation').value.trim();
+  const description  = document.getElementById('pkgDescription').value.trim();
+  const price        = parseFloat(document.getElementById('pkgPrice').value);
+  const duration     = document.getElementById('pkgDuration').value.trim();
+  const max_persons  = parseInt(document.getElementById('pkgMaxPersons').value) || 10;
+  const image_url    = document.getElementById('pkgImageUrl').value.trim();
+  const datesRaw     = document.getElementById('pkgDates').value.trim();
+  const available_dates = datesRaw
+    ? datesRaw.split(',').map(d => d.trim()).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d))
+    : [];
 
-  if (!email || !password) {
-    showLoginAlert('Please enter both email and password.', 'error');
+  if (!title || !description || !price || !image_url) {
+    showAlert(alertEl, 'Please fill all required fields.');
     return;
   }
 
-  loginSubmit.disabled    = true;
-  loginSubmit.textContent = 'Signing in…';
-  hideLoginAlert();
+  const data = { title, location, description, price, duration, max_persons, image_url, available_dates };
 
+  setLoading(submitBtn, true, submitBtn.textContent);
   try {
-    const user = await fetchLogin(email, password);
-    saveSession(user);
-    updateNav();
-    showToast(`Welcome back, ${user.email.split('@')[0]}!`, 'success');
-    navigate(user.role === 'admin' ? 'admin' : 'dashboard');
+    if (id) {
+      await api.updatePackage(id, data);
+      toast('Package updated!', 'success');
+    } else {
+      await api.createPackage(data);
+      toast('Package created!', 'success');
+    }
+    closePkgModal();
+    loadAdminPackages();
+    loadAdminStats();
   } catch (err) {
-    showLoginAlert(err.message || 'Login failed. Please try again.', 'error');
+    showAlert(alertEl, err.message);
   } finally {
-    loginSubmit.disabled    = false;
-    loginSubmit.textContent = 'Sign In';
+    setLoading(submitBtn, false, id ? 'Update Package' : 'Save Package');
   }
 });
 
-togglePassword.addEventListener('click', () => {
-  const isPassword = loginPassword.type === 'password';
-  loginPassword.type = isPassword ? 'text' : 'password';
-  togglePassword.textContent = isPassword ? '🙈' : '👁';
+/* ════════════════════════════════════════════════════
+   AUTH FORMS
+════════════════════════════════════════════════════ */
+
+// Register
+document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const alertEl  = document.getElementById('registerAlert');
+  const submitBtn = document.getElementById('registerSubmit');
+  hideAlert(alertEl);
+
+  const name     = document.getElementById('regName').value.trim();
+  const email    = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const confirm  = document.getElementById('regPasswordConfirm').value;
+
+  if (!name || !email || !password) { showAlert(alertEl, 'All fields are required.'); return; }
+  if (password.length < 6)          { showAlert(alertEl, 'Password must be at least 6 characters.'); return; }
+  if (password !== confirm)          { showAlert(alertEl, 'Passwords do not match.'); return; }
+
+  setLoading(submitBtn, true, 'Create Account');
+  try {
+    const data = await api.register(name, email, password);
+    saveSession(data.user, data.token);
+    updateNav();
+    await loadWishlistIds();
+    toast(`Welcome, ${data.user.name}! 🎉`, 'success');
+    navigate('dashboard');
+  } catch (err) {
+    showAlert(alertEl, err.message);
+  } finally {
+    setLoading(submitBtn, false, 'Create Account');
+  }
 });
 
-logoutBtn.addEventListener('click', () => {
+// Login
+document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const alertEl  = document.getElementById('loginAlert');
+  const submitBtn = document.getElementById('loginSubmit');
+  hideAlert(alertEl);
+
+  const email    = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+
+  if (!email || !password) { showAlert(alertEl, 'Email and password are required.'); return; }
+
+  setLoading(submitBtn, true, 'Sign In');
+  try {
+    const data = await api.login(email, password);
+    saveSession(data.user, data.token);
+    updateNav();
+    await loadWishlistIds();
+    toast(`Welcome back, ${data.user.name}!`, 'success');
+    navigate(data.user.role === 'admin' ? 'admin' : 'dashboard');
+  } catch (err) {
+    showAlert(alertEl, err.message);
+  } finally {
+    setLoading(submitBtn, false, 'Sign In');
+  }
+});
+
+// Logout
+document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+  try { await api.logout(); } catch { /* ignore */ }
   clearSession();
+  state.wishlistIds.clear();
   updateNav();
-  showToast('You have been logged out.', 'default');
+  toast('You have been logged out.', 'default');
   navigate('home');
 });
 
-// Hamburger menu
-navToggle.addEventListener('click', () => {
-  navLinks.classList.toggle('is-open');
+// Password toggle (works for any input-group button with data-target)
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.input-group__toggle');
+  if (!btn) return;
+  const targetId = btn.dataset.target;
+  if (!targetId) return;
+  const input = document.getElementById(targetId);
+  if (!input) return;
+  const isPass = input.type === 'password';
+  input.type   = isPass ? 'text' : 'password';
+  btn.textContent = isPass ? '🙈' : '👁';
 });
 
-// ── Global navigation delegation ───────────────────────────────────────────
-// Handles all [data-view="..."] anchor/button clicks anywhere on the page
+// Password strength indicator
+document.getElementById('regPassword')?.addEventListener('input', function() {
+  const bar = document.getElementById('regPasswordStrength');
+  if (!bar) return;
+  const len = this.value.length;
+  bar.className = 'password-strength ' + (len === 0 ? '' : len < 6 ? 'weak' : len < 10 ? 'medium' : 'strong');
+});
+
+/* ════════════════════════════════════════════════════
+   CONTACT FORM
+════════════════════════════════════════════════════ */
+document.getElementById('contactForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const alertEl  = document.getElementById('contactAlert');
+  const submitBtn = e.target.querySelector('button[type=submit]');
+  hideAlert(alertEl);
+
+  const name    = document.getElementById('contactName').value.trim();
+  const email   = document.getElementById('contactEmail').value.trim();
+  const subject = document.getElementById('contactSubject').value.trim();
+  const message = document.getElementById('contactMessage').value.trim();
+
+  if (!name || !email || !subject || !message) { showAlert(alertEl, 'All fields are required.'); return; }
+
+  setLoading(submitBtn, true, 'Send Message');
+  try {
+    await api.submitInquiry(name, email, subject, message);
+    showAlert(alertEl, 'Message sent! We\'ll get back to you soon. ✅', 'success');
+    e.target.reset();
+  } catch (err) {
+    showAlert(alertEl, err.message);
+  } finally {
+    setLoading(submitBtn, false, 'Send Message');
+  }
+});
+
+/* ════════════════════════════════════════════════════
+   HERO SEARCH
+════════════════════════════════════════════════════ */
+document.getElementById('heroSearchBtn')?.addEventListener('click', () => {
+  const val = document.getElementById('heroSearch').value.trim();
+  if (val) {
+    state.pkgSearch = val;
+    state.pkgPage   = 1;
+    navigate('destinations');
+    document.getElementById('pkgSearchInput').value = val;
+  } else {
+    navigate('destinations');
+  }
+});
+
+document.getElementById('heroSearch')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('heroSearchBtn').click();
+});
+
+/* ════════════════════════════════════════════════════
+   DESTINATION SEARCH
+════════════════════════════════════════════════════ */
+document.getElementById('pkgSearchBtn')?.addEventListener('click', () => {
+  const val = document.getElementById('pkgSearchInput').value.trim();
+  state.pkgSearch = val;
+  state.pkgPage   = 1;
+  document.getElementById('pkgSearchClear').classList.toggle('d-none', !val);
+  loadDestinations();
+});
+
+document.getElementById('pkgSearchInput')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('pkgSearchBtn').click();
+});
+
+document.getElementById('pkgSearchClear')?.addEventListener('click', () => {
+  document.getElementById('pkgSearchInput').value = '';
+  state.pkgSearch = '';
+  state.pkgPage   = 1;
+  document.getElementById('pkgSearchClear').classList.add('d-none');
+  loadDestinations();
+});
+
+document.getElementById('clearSearchBtn')?.addEventListener('click', () => {
+  document.getElementById('pkgSearchInput').value = '';
+  state.pkgSearch = '';
+  state.pkgPage   = 1;
+  document.getElementById('pkgSearchClear').classList.add('d-none');
+  loadDestinations();
+});
+
+/* ════════════════════════════════════════════════════
+   TABS
+════════════════════════════════════════════════════ */
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.tab-btn');
+  if (!btn) return;
+  const tabId = btn.dataset.tab;
+  if (!tabId) return;
+
+  const parent = btn.closest('.tabs');
+  if (!parent) return;
+
+  // Deactivate all tabs in the same group
+  parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-btn--active'));
+  btn.classList.add('tab-btn--active');
+
+  // Find and toggle content panels
+  // Look for siblings within the same container (next .tab-content elements)
+  const container = parent.parentElement;
+  container.querySelectorAll('.tab-content').forEach(tc => {
+    tc.classList.toggle('d-none', tc.id !== tabId);
+  });
+});
+
+/* ════════════════════════════════════════════════════
+   GLOBAL CLICK DELEGATION (data-view)
+════════════════════════════════════════════════════ */
 document.addEventListener('click', (e) => {
   const trigger = e.target.closest('[data-view]');
   if (!trigger) return;
@@ -362,20 +1183,26 @@ document.addEventListener('click', (e) => {
   navigate(trigger.dataset.view);
 });
 
-// ── Login alert helpers ─────────────────────────────────────────────────────
-function showLoginAlert(message, type) {
-  loginAlert.textContent = message;
-  loginAlert.className   = `form-alert form-alert--${type}`;
-  loginAlert.classList.remove('d-none');
-}
+/* ════════════════════════════════════════════════════
+   HAMBURGER
+════════════════════════════════════════════════════ */
+document.getElementById('navToggle')?.addEventListener('click', () => {
+  document.getElementById('navLinks').classList.toggle('is-open');
+});
 
-function hideLoginAlert() {
-  loginAlert.classList.add('d-none');
-}
+/* ════════════════════════════════════════════════════
+   KEYBOARD: close modal with Escape
+════════════════════════════════════════════════════ */
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closePkgModal();
+});
 
-// ── Initialise ─────────────────────────────────────────────────────────────
-(function init() {
+/* ════════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════════ */
+(async function init() {
   loadSession();
   updateNav();
+  if (state.user) await loadWishlistIds();
   navigate('home');
 })();

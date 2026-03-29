@@ -5,18 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TravelExplore — Discover Your Next Adventure</title>
   <link rel="stylesheet" href="css/style.css" />
-  <!-- Feather icons (inline SVG via JS — no external lib needed) -->
 </head>
 <body>
 
-  <!-- ═══════════════════════════════════════════
+  <!-- ══════════════════════════════════════════════
        NAVIGATION
-  ════════════════════════════════════════════ -->
+  ═══════════════════════════════════════════════ -->
   <nav class="navbar" id="navbar">
     <div class="container navbar__inner">
-      <a href="#" class="navbar__brand" data-view="home">
-        ✈ TravelExplore
-      </a>
+      <a href="#" class="navbar__brand" data-view="home">✈ TravelExplore</a>
 
       <button class="navbar__toggle" id="navToggle" aria-label="Toggle menu">
         <span></span><span></span><span></span>
@@ -25,53 +22,54 @@
       <ul class="navbar__links" id="navLinks">
         <li><a href="#" data-view="home">Home</a></li>
         <li><a href="#" data-view="destinations">Destinations</a></li>
+        <li><a href="#" data-view="contact">Contact</a></li>
 
-        <!-- Shown when logged OUT -->
+        <!-- Logged OUT -->
         <li class="nav-guest"><a href="#" data-view="login" class="btn btn--outline btn--sm">Login</a></li>
+        <li class="nav-guest"><a href="#" data-view="register" class="btn btn--primary btn--sm">Register</a></li>
 
-        <!-- Shown when logged IN as user -->
+        <!-- Logged IN as user (not admin) -->
         <li class="nav-user d-none"><a href="#" data-view="dashboard">My Dashboard</a></li>
+        <li class="nav-user d-none"><a href="#" data-view="wishlist">Wishlist <span class="wishlist-count" id="navWishlistCount"></span></a></li>
 
-        <!-- Shown when logged IN as admin -->
+        <!-- Logged IN as admin -->
         <li class="nav-admin d-none"><a href="#" data-view="admin">Admin Panel</a></li>
 
-        <!-- Shown when logged IN (any role) -->
+        <!-- Logged IN (any) -->
         <li class="nav-auth d-none">
-          <span class="nav-user-name" id="navUserName"></span>
-          <button class="btn btn--outline btn--sm ml-2" id="logoutBtn">Logout</button>
+          <span class="nav-greeting" id="navGreeting"></span>
+          <button class="btn btn--ghost-dark btn--sm ml-2" id="logoutBtn">Logout</button>
         </li>
       </ul>
     </div>
   </nav>
 
-  <!-- ═══════════════════════════════════════════
-       VIEWS  (only one is visible at a time)
-  ════════════════════════════════════════════ -->
+  <!-- ══════════════════════════════════════════════
+       APP — one <section.view> visible at a time
+  ═══════════════════════════════════════════════ -->
   <main id="app">
 
-    <!-- ── HOME VIEW ─────────────────────────── -->
+    <!-- ▸ HOME ─────────────────────────────────── -->
     <section class="view" id="view-home">
       <div class="hero">
         <div class="hero__overlay"></div>
         <div class="hero__content container">
           <span class="hero__badge">✈ World-Class Travel</span>
-          <h1 class="hero__title">Discover Your<br>Next <span class="text-accent">Adventure</span></h1>
+          <h1 class="hero__title">Discover Your<br><span class="text-accent">Next Adventure</span></h1>
           <p class="hero__subtitle">
             Hand-picked destinations, unbeatable prices, and memories that last a lifetime.
-            Start your journey today.
           </p>
+          <div class="hero__search">
+            <input type="text" id="heroSearch" class="hero__search-input" placeholder="Search destinations, e.g. Bali, Japan…" />
+            <button class="btn btn--accent btn--lg" id="heroSearchBtn">🔍 Search</button>
+          </div>
           <div class="hero__actions">
-            <button class="btn btn--primary btn--lg" data-view="destinations">
-              Explore Destinations
-            </button>
-            <button class="btn btn--ghost btn--lg" data-view="login">
-              Sign In
-            </button>
+            <button class="btn btn--primary btn--lg" data-view="destinations">Explore Packages</button>
+            <button class="btn btn--ghost btn--lg" data-view="register">Join Free</button>
           </div>
         </div>
       </div>
 
-      <!-- Features strip -->
       <div class="features container">
         <div class="features__grid">
           <div class="feature-card">
@@ -87,7 +85,7 @@
           <div class="feature-card">
             <div class="feature-card__icon">🛡️</div>
             <h3>Fully Protected</h3>
-            <p>All bookings are ATOL-protected and backed by 24/7 expert support.</p>
+            <p>All bookings backed by 24/7 expert support and full travel protection.</p>
           </div>
           <div class="feature-card">
             <div class="feature-card__icon">⭐</div>
@@ -98,31 +96,48 @@
       </div>
     </section>
 
-    <!-- ── DESTINATIONS VIEW ──────────────────── -->
-    <section class="view d-none" id="view-destinations">
-      <div class="page-header">
-        <div class="container">
-          <h2 class="page-header__title">Travel Packages</h2>
-          <p class="page-header__subtitle">Choose from our hand-picked collection of premium destinations.</p>
-        </div>
-      </div>
-      <div class="container py-10">
-        <div class="packages-grid" id="packagesGrid">
-          <!-- Cards injected by JS -->
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card"></div>
-        </div>
-        <div class="empty-state d-none" id="packagesEmpty">
-          <p>No packages available at this time. Please check back later.</p>
+    <!-- ▸ REGISTER ──────────────────────────────── -->
+    <section class="view d-none" id="view-register">
+      <div class="auth-wrapper">
+        <div class="auth-card">
+          <div class="auth-card__header">
+            <span class="auth-card__logo">✈</span>
+            <h2>Create Account</h2>
+            <p>Join TravelExplore and start your journey</p>
+          </div>
+          <form id="registerForm" class="auth-form" novalidate>
+            <div class="form-group">
+              <label class="form-label" for="regName">Full Name</label>
+              <input type="text" id="regName" class="form-input" placeholder="John Traveller" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="regEmail">Email Address</label>
+              <input type="email" id="regEmail" class="form-input" placeholder="you@example.com" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="regPassword">Password</label>
+              <div class="input-group">
+                <input type="password" id="regPassword" class="form-input" placeholder="Min. 6 characters" required />
+                <button type="button" class="input-group__toggle" data-target="regPassword">👁</button>
+              </div>
+              <div class="password-strength" id="regPasswordStrength"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="regPasswordConfirm">Confirm Password</label>
+              <div class="input-group">
+                <input type="password" id="regPasswordConfirm" class="form-input" placeholder="Repeat password" required />
+                <button type="button" class="input-group__toggle" data-target="regPasswordConfirm">👁</button>
+              </div>
+            </div>
+            <div class="form-alert d-none" id="registerAlert" role="alert"></div>
+            <button type="submit" class="btn btn--primary btn--full" id="registerSubmit">Create Account</button>
+          </form>
+          <p class="auth-card__switch">Already have an account? <a href="#" data-view="login">Sign in</a></p>
         </div>
       </div>
     </section>
 
-    <!-- ── LOGIN VIEW ─────────────────────────── -->
+    <!-- ▸ LOGIN ─────────────────────────────────── -->
     <section class="view d-none" id="view-login">
       <div class="auth-wrapper">
         <div class="auth-card">
@@ -131,174 +146,348 @@
             <h2>Welcome Back</h2>
             <p>Sign in to manage your bookings</p>
           </div>
-
           <form id="loginForm" class="auth-form" novalidate>
             <div class="form-group">
               <label class="form-label" for="loginEmail">Email Address</label>
-              <input
-                type="email"
-                id="loginEmail"
-                class="form-input"
-                placeholder="you@example.com"
-                required
-                autocomplete="email"
-              />
+              <input type="email" id="loginEmail" class="form-input" placeholder="you@example.com" required autocomplete="email" />
             </div>
             <div class="form-group">
               <label class="form-label" for="loginPassword">Password</label>
               <div class="input-group">
-                <input
-                  type="password"
-                  id="loginPassword"
-                  class="form-input"
-                  placeholder="••••••••"
-                  required
-                  autocomplete="current-password"
-                />
-                <button type="button" class="input-group__toggle" id="togglePassword" aria-label="Show password">👁</button>
+                <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required autocomplete="current-password" />
+                <button type="button" class="input-group__toggle" data-target="loginPassword">👁</button>
               </div>
             </div>
-
             <div class="form-alert d-none" id="loginAlert" role="alert"></div>
-
-            <button type="submit" class="btn btn--primary btn--full" id="loginSubmit">
-              Sign In
-            </button>
+            <button type="submit" class="btn btn--primary btn--full" id="loginSubmit">Sign In</button>
           </form>
-
           <p class="auth-card__hint">
             <strong>Demo accounts:</strong><br>
             Admin: admin@travelexplore.com / admin123<br>
             User: user@travelexplore.com / user123
           </p>
+          <p class="auth-card__switch">No account? <a href="#" data-view="register">Register now</a></p>
         </div>
       </div>
     </section>
 
-    <!-- ── USER DASHBOARD VIEW ───────────────── -->
+    <!-- ▸ DESTINATIONS ──────────────────────────── -->
+    <section class="view d-none" id="view-destinations">
+      <div class="page-header">
+        <div class="container">
+          <h2 class="page-header__title">Travel Packages</h2>
+          <p class="page-header__subtitle">Explore our hand-picked collection of premium destinations.</p>
+        </div>
+      </div>
+      <div class="container py-10">
+        <!-- Search + filter bar -->
+        <div class="search-bar">
+          <div class="search-bar__input-wrap">
+            <span class="search-bar__icon">🔍</span>
+            <input type="text" id="pkgSearchInput" class="search-bar__input" placeholder="Search destinations, keywords…" />
+            <button class="search-bar__clear d-none" id="pkgSearchClear">✕</button>
+          </div>
+          <button class="btn btn--primary" id="pkgSearchBtn">Search</button>
+        </div>
+        <div id="searchLabel" class="search-label d-none"></div>
+        <div class="packages-grid" id="packagesGrid"></div>
+        <div class="empty-state d-none" id="packagesEmpty">
+          <span class="empty-state__icon">🗺️</span>
+          <p>No packages found. Try a different search.</p>
+          <button class="btn btn--outline mt-4" id="clearSearchBtn">Clear Search</button>
+        </div>
+        <!-- Pagination -->
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </section>
+
+    <!-- ▸ PACKAGE DETAIL ────────────────────────── -->
+    <section class="view d-none" id="view-package-detail">
+      <div id="pkgDetailContent">
+        <!-- Injected by JS -->
+      </div>
+    </section>
+
+    <!-- ▸ USER DASHBOARD ───────────────────────── -->
     <section class="view d-none" id="view-dashboard">
       <div class="page-header">
         <div class="container">
           <h2 class="page-header__title">My Dashboard</h2>
-          <p class="page-header__subtitle">Manage your upcoming trips and booking history.</p>
+          <p class="page-header__subtitle" id="dashboardGreeting">Manage your trips and bookings.</p>
         </div>
       </div>
       <div class="container py-10">
-        <div class="dashboard-grid">
-          <div class="stat-card">
-            <span class="stat-card__icon">🧳</span>
-            <div>
-              <p class="stat-card__label">Total Bookings</p>
-              <p class="stat-card__value">0</p>
-            </div>
-          </div>
-          <div class="stat-card">
-            <span class="stat-card__icon">✈️</span>
-            <div>
-              <p class="stat-card__label">Upcoming Trips</p>
-              <p class="stat-card__value">0</p>
-            </div>
-          </div>
-          <div class="stat-card">
-            <span class="stat-card__icon">⭐</span>
-            <div>
-              <p class="stat-card__label">Rewards Points</p>
-              <p class="stat-card__value">250</p>
-            </div>
+        <div class="tabs">
+          <button class="tab-btn tab-btn--active" data-tab="tab-bookings">📋 Booking History</button>
+          <button class="tab-btn" data-tab="tab-wishlist">❤️ Wishlist</button>
+        </div>
+
+        <!-- Booking History tab -->
+        <div class="tab-content" id="tab-bookings">
+          <div id="bookingsList">
+            <div class="loading-spinner">Loading…</div>
           </div>
         </div>
 
-        <div class="card mt-8">
-          <div class="card__header">
-            <h3>Booking History</h3>
+        <!-- Wishlist tab -->
+        <div class="tab-content d-none" id="tab-wishlist">
+          <div id="wishlistContent">
+            <div class="loading-spinner">Loading…</div>
           </div>
-          <div class="card__body">
-            <div class="empty-state">
-              <span class="empty-state__icon">📋</span>
-              <p>You haven't made any bookings yet.</p>
-              <button class="btn btn--primary btn--sm mt-4" data-view="destinations">Browse Packages</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ▸ WISHLIST (standalone) ─────────────────── -->
+    <section class="view d-none" id="view-wishlist">
+      <div class="page-header">
+        <div class="container">
+          <h2 class="page-header__title">My Wishlist</h2>
+          <p class="page-header__subtitle">Packages you've saved for later.</p>
+        </div>
+      </div>
+      <div class="container py-10">
+        <div id="wishlistGrid">
+          <div class="loading-spinner">Loading…</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ▸ CONTACT ───────────────────────────────── -->
+    <section class="view d-none" id="view-contact">
+      <div class="page-header">
+        <div class="container">
+          <h2 class="page-header__title">Contact Us</h2>
+          <p class="page-header__subtitle">Have a question? We'd love to hear from you.</p>
+        </div>
+      </div>
+      <div class="container py-10">
+        <div class="contact-grid">
+          <div class="contact-info">
+            <h3>Get in Touch</h3>
+            <div class="contact-item"><span>��</span><div><strong>Email</strong><p>hello@travelexplore.com</p></div></div>
+            <div class="contact-item"><span>📞</span><div><strong>Phone</strong><p>+1 (800) 555-TRAVEL</p></div></div>
+            <div class="contact-item"><span>🕒</span><div><strong>Hours</strong><p>Mon–Fri 9am–6pm EST</p></div></div>
+          </div>
+          <div class="card">
+            <div class="card__body">
+              <form id="contactForm" class="auth-form" novalidate>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="contactName">Your Name</label>
+                    <input type="text" id="contactName" class="form-input" placeholder="John Doe" required />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="contactEmail">Email</label>
+                    <input type="email" id="contactEmail" class="form-input" placeholder="you@example.com" required />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="contactSubject">Subject</label>
+                  <input type="text" id="contactSubject" class="form-input" placeholder="Booking enquiry…" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="contactMessage">Message</label>
+                  <textarea id="contactMessage" class="form-input form-textarea" rows="5" placeholder="How can we help?" required></textarea>
+                </div>
+                <div class="form-alert d-none" id="contactAlert" role="alert"></div>
+                <button type="submit" class="btn btn--primary btn--full">Send Message</button>
+              </form>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ── ADMIN DASHBOARD VIEW ──────────────── -->
+    <!-- ▸ ADMIN PANEL ───────────────────────────── -->
     <section class="view d-none" id="view-admin">
       <div class="page-header">
         <div class="container">
           <h2 class="page-header__title">Admin Panel</h2>
-          <p class="page-header__subtitle">Manage all travel packages and system data.</p>
+          <p class="page-header__subtitle">Manage packages, bookings, and users.</p>
         </div>
       </div>
       <div class="container py-10">
 
-        <!-- Summary cards -->
-        <div class="dashboard-grid mb-8">
+        <!-- Stats row -->
+        <div class="stats-row" id="adminStatsRow">
           <div class="stat-card stat-card--blue">
             <span class="stat-card__icon">📦</span>
-            <div>
-              <p class="stat-card__label">Total Packages</p>
-              <p class="stat-card__value" id="adminPackageCount">—</p>
-            </div>
+            <div><p class="stat-card__label">Packages</p><p class="stat-card__value" id="stat-packages">—</p></div>
           </div>
           <div class="stat-card stat-card--green">
             <span class="stat-card__icon">👥</span>
-            <div>
-              <p class="stat-card__label">Registered Users</p>
-              <p class="stat-card__value">2</p>
-            </div>
+            <div><p class="stat-card__label">Users</p><p class="stat-card__value" id="stat-users">—</p></div>
           </div>
           <div class="stat-card stat-card--orange">
             <span class="stat-card__icon">📅</span>
-            <div>
-              <p class="stat-card__label">Total Bookings</p>
-              <p class="stat-card__value">0</p>
+            <div><p class="stat-card__label">Bookings</p><p class="stat-card__value" id="stat-bookings">—</p></div>
+          </div>
+          <div class="stat-card stat-card--purple">
+            <span class="stat-card__icon">💵</span>
+            <div><p class="stat-card__label">Revenue</p><p class="stat-card__value" id="stat-revenue">—</p></div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs mt-8">
+          <button class="tab-btn tab-btn--active" data-tab="admin-tab-packages">📦 Packages</button>
+          <button class="tab-btn" data-tab="admin-tab-bookings">📅 Bookings</button>
+          <button class="tab-btn" data-tab="admin-tab-users">👥 Users</button>
+          <button class="tab-btn" data-tab="admin-tab-inquiries">📩 Inquiries</button>
+        </div>
+
+        <!-- Packages tab -->
+        <div class="tab-content" id="admin-tab-packages">
+          <div class="card">
+            <div class="card__header">
+              <h3>All Packages</h3>
+              <button class="btn btn--primary btn--sm" id="addPackageBtn">+ Add Package</button>
+            </div>
+            <div class="card__body p-0">
+              <div class="table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr><th>#</th><th>Image</th><th>Title</th><th>Location</th><th>Price</th><th>Dates</th><th>Actions</th></tr>
+                  </thead>
+                  <tbody id="adminPkgTbody"></tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Packages table -->
-        <div class="card">
-          <div class="card__header">
-            <h3>All Travel Packages</h3>
-            <button class="btn btn--primary btn--sm">+ Add Package</button>
-          </div>
-          <div class="card__body p-0">
-            <div class="table-wrapper">
-              <table class="data-table" id="adminPackagesTable">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Image</th>
-                    <th>Title</th>
-                    <th>Price</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="adminPackagesTbody">
-                  <!-- Rows injected by JS -->
-                </tbody>
-              </table>
+        <!-- Bookings tab -->
+        <div class="tab-content d-none" id="admin-tab-bookings">
+          <div class="card">
+            <div class="card__header"><h3>All Bookings</h3></div>
+            <div class="card__body p-0">
+              <div class="table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr><th>#</th><th>User</th><th>Package</th><th>Date</th><th>Persons</th><th>Total</th><th>Status</th><th>Actions</th></tr>
+                  </thead>
+                  <tbody id="adminBookingsTbody"></tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- Users tab -->
+        <div class="tab-content d-none" id="admin-tab-users">
+          <div class="card">
+            <div class="card__header"><h3>Registered Users</h3></div>
+            <div class="card__body p-0">
+              <div class="table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Joined</th></tr>
+                  </thead>
+                  <tbody id="adminUsersTbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inquiries tab -->
+        <div class="tab-content d-none" id="admin-tab-inquiries">
+          <div class="card">
+            <div class="card__header"><h3>Contact Inquiries</h3></div>
+            <div class="card__body p-0">
+              <div class="table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr><th>#</th><th>Name</th><th>Email</th><th>Subject</th><th>Date</th><th>Status</th></tr>
+                  </thead>
+                  <tbody id="adminInquiriesTbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
 
   </main>
 
-  <!-- ═══════════════════════════════════════════
+  <!-- ══════════════════════════════════════════════
+       MODAL — package create / edit form
+  ═══════════════════════════════════════════════ -->
+  <div class="modal-overlay d-none" id="pkgModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="pkgModalTitle">
+      <div class="modal__header">
+        <h3 id="pkgModalTitle">Add Package</h3>
+        <button class="modal__close" id="pkgModalClose" aria-label="Close">✕</button>
+      </div>
+      <div class="modal__body">
+        <form id="pkgForm" class="pkg-form" novalidate>
+          <input type="hidden" id="pkgFormId" />
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="pkgTitle">Title *</label>
+              <input type="text" id="pkgTitle" class="form-input" placeholder="e.g. Bali Paradise Retreat" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="pkgLocation">Location *</label>
+              <input type="text" id="pkgLocation" class="form-input" placeholder="e.g. Bali, Indonesia" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="pkgDescription">Description *</label>
+            <textarea id="pkgDescription" class="form-input form-textarea" rows="4" placeholder="Describe the package…" required></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="pkgPrice">Price (USD) *</label>
+              <input type="number" id="pkgPrice" class="form-input" placeholder="1299" min="1" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="pkgDuration">Duration</label>
+              <input type="text" id="pkgDuration" class="form-input" placeholder="e.g. 7 days / 6 nights" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="pkgMaxPersons">Max Persons</label>
+              <input type="number" id="pkgMaxPersons" class="form-input" placeholder="10" min="1" max="100" value="10" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="pkgImageUrl">Image URL *</label>
+            <input type="url" id="pkgImageUrl" class="form-input" placeholder="https://images.unsplash.com/…" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="pkgDates">Available Dates</label>
+            <input type="text" id="pkgDates" class="form-input" placeholder="YYYY-MM-DD, YYYY-MM-DD, …" />
+            <p class="form-hint">Comma-separated dates in YYYY-MM-DD format</p>
+          </div>
+          <div class="form-alert d-none" id="pkgFormAlert" role="alert"></div>
+          <div class="modal__footer">
+            <button type="button" class="btn btn--outline" id="pkgFormCancel">Cancel</button>
+            <button type="submit" class="btn btn--primary" id="pkgFormSubmit">Save Package</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
        FOOTER
-  ════════════════════════════════════════════ -->
+  ═══════════════════════════════════════════════ -->
   <footer class="footer">
     <div class="container footer__inner">
       <p class="footer__brand">✈ TravelExplore</p>
-      <p class="footer__copy">© 2024 TravelExplore. All rights reserved.</p>
+      <nav class="footer__links">
+        <a href="#" data-view="home">Home</a>
+        <a href="#" data-view="destinations">Destinations</a>
+        <a href="#" data-view="contact">Contact</a>
+      </nav>
+      <p class="footer__copy">© 2025 TravelExplore. All rights reserved.</p>
     </div>
   </footer>
 
-  <!-- Toast notification -->
+  <!-- Toast -->
   <div class="toast d-none" id="toast" role="status" aria-live="polite"></div>
 
   <script src="js/main.js"></script>
